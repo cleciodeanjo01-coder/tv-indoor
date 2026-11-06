@@ -24,6 +24,9 @@
           <p class="text-xs text-slate-400">Adicione, exclua mídias e configure o QR Code</p>
         </div>
       </div>
+      <button onclick="configurarToken()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+        <i class="fa-solid fa-key text-emerald-400"></i> Alterar Token
+      </button>
     </div>
 
     <!-- LISTA DE MÍDIAS ATUAIS -->
@@ -73,7 +76,7 @@
     <div class="pt-2">
       <button onclick="salvarAlteracoesGitHub()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2">
         <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
-        PUBLICAR ALTERAÇÕES PARA TODAS AS TVS
+        PUBLICAR ALTERAÇÕES PARA TODAS AS TVs
       </button>
       <p id="status-msg" class="text-xs text-center text-slate-400 mt-2 font-semibold"></p>
       
@@ -90,15 +93,33 @@
     const USER = "cleciodeanjo01-coder";
     const REPO = "tv-indoor"; 
     const FILE_PATH = "playlist.json";
-    const TOKEN = "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";
 
     let playlistData = { brand: "MÍDIA INDOOR", duration: 10, ticker: "", qrLink: "", qrTitle: "", urls: [] };
     let currentSha = "";
+
+    function obterToken() {
+      let token = localStorage.getItem("github_token_tv");
+      if (!token) {
+        token = prompt("Insira o seu Token Clássico do GitHub (começa com ghp_):");
+        if (token) {
+          localStorage.setItem("github_token_tv", token.trim());
+        }
+      }
+      return token;
+    }
+
+    function configurarToken() {
+      localStorage.removeItem("github_token_tv");
+      location.reload();
+    }
 
     window.onload = () => { carregarDadosRemotos(); };
 
     async function carregarDadosRemotos() {
       const statusEl = document.getElementById("status-msg");
+      const TOKEN = obterToken();
+      if (!TOKEN) return;
+
       statusEl.innerText = "A carregar dados...";
 
       try {
@@ -114,6 +135,11 @@
         
         if (!apiRes.ok) {
           const errJson = await apiRes.json();
+          if (apiRes.status === 401) {
+            localStorage.removeItem("github_token_tv"); // Limpa o token inválido
+            alert("Token inválido ou expirado. Insira novamente.");
+            location.reload();
+          }
           throw new Error(`Erro ao buscar arquivo: ${apiRes.status} - ${errJson.message}`);
         }
 
@@ -182,6 +208,9 @@
 
     async function salvarAlteracoesGitHub() {
       const statusEl = document.getElementById("status-msg");
+      const TOKEN = obterToken();
+      if (!TOKEN) return;
+
       document.getElementById("debug-box").classList.add("hidden");
 
       playlistData.duration = parseInt(document.getElementById("inp-duration").value) || 10;
