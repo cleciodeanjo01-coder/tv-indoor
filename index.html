@@ -3,100 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mídia Indoor Professional Player</title>
+  <title>Mídia Indoor com QR Code</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Biblioteca para gerar o QR Code automaticamente -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
-    
-    * {
-      user-select: none;
-      box-sizing: border-box;
-    }
-    
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: #000;
-      font-family: 'Montserrat', sans-serif;
-    }
+    * { user-select: none; box-sizing: border-box; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Montserrat', sans-serif; }
 
     .media-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      opacity: 0;
-      transition: opacity 1s ease-in-out;
-      z-index: 1;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: contain; opacity: 0; transition: opacity 1s ease-in-out; z-index: 1;
     }
-
-    .media-layer.active {
-      opacity: 1;
-      z-index: 2;
-    }
+    .media-layer.active { opacity: 1; z-index: 2; }
 
     .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    @keyframes marquee {
-      0% { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
-    }
-
-    .animate-marquee {
-      display: inline-block;
-      white-space: nowrap;
-      animation: marquee 25s linear infinite;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.2);
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 3px;
-    }
+    @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; }
   </style>
 </head>
 <body class="relative w-screen h-screen overflow-hidden bg-black text-white">
 
-  <!-- PLAYER CONTAINER -->
-  <div id="player-container" class="relative w-full h-full flex items-center justify-center bg-black">
-    <!-- Media layers dynamically inserted here -->
-  </div>
+  <!-- CONTAINER DE MÍDIAS -->
+  <div id="player-container" class="relative w-full h-full flex items-center justify-center bg-black"></div>
 
-  <!-- TOP HEADER WIDGETS -->
+  <!-- CABEÇALHO SUPERIOR -->
   <div class="absolute top-6 left-6 right-6 z-30 flex justify-between items-start pointer-events-none">
-    
-    <!-- BRAND LOGO / TITLE -->
     <div id="brand-container" class="glass-panel px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl">
-      <img id="brand-logo" src="https://cdn-icons-png.flaticon.com/512/888/888859.png" alt="Logo" class="h-8 w-auto object-contain">
       <span id="brand-title" class="font-extrabold text-lg tracking-wider text-white">MÍDIA INDOOR</span>
     </div>
 
-    <!-- CLOCK & WEATHER WIDGET -->
     <div class="glass-panel px-6 py-3 rounded-2xl flex items-center gap-6 shadow-2xl">
-      <div id="weather-widget" class="flex items-center gap-3 border-r border-slate-700 pr-6">
-        <i id="weather-icon" class="fa-solid fa-sun text-yellow-400 text-2xl"></i>
-        <div class="flex flex-col">
-          <span id="weather-temp" class="text-lg font-bold leading-tight">--°C</span>
-          <span id="weather-city" class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Carregando...</span>
-        </div>
-      </div>
       <div class="flex flex-col text-right">
         <span id="clock-time" class="text-2xl font-black tracking-widest text-emerald-400 leading-none">00:00:00</span>
         <span id="clock-date" class="text-xs text-slate-300 font-medium tracking-wide mt-1">--/--/----</span>
@@ -104,14 +49,13 @@
     </div>
   </div>
 
-  <!-- FLOATING QR CODE CARD -->
-  <div id="qrcode-card" class="absolute bottom-20 right-6 z-30 glass-panel p-4 rounded-2xl flex flex-col items-center gap-2 shadow-2xl border border-emerald-500/30">
-    <div id="qrcode-container" class="p-2 bg-white rounded-xl shadow-inner"></div>
-    <span id="qrcode-title" class="text-xs font-bold text-emerald-400 uppercase tracking-wider mt-1 text-center max-w-[140px]">Acesse nosso site</span>
-    <span id="qrcode-subtitle" class="text-[10px] text-slate-300 text-center max-w-[140px]">Aponte a câmera do seu celular</span>
+  <!-- WIDGET DO QR CODE FLUTUANTE (CANTO INFERIOR DIREITO) -->
+  <div id="qr-box" class="absolute bottom-16 right-6 z-40 glass-panel p-4 rounded-3xl shadow-2xl flex flex-col items-center gap-2 hidden border border-emerald-500/30">
+    <span id="qr-label" class="text-xs font-black uppercase tracking-wider text-emerald-400">Escaneie aqui</span>
+    <div id="qrcode" class="bg-white p-2 rounded-2xl shadow-inner"></div>
   </div>
 
-  <!-- BOTTOM MARQUEE TICKER -->
+  <!-- RODAPÉ LETREIRO -->
   <div class="absolute bottom-0 left-0 w-full z-30 glass-panel border-t border-slate-800 py-3 overflow-hidden">
     <div class="flex items-center">
       <div class="bg-emerald-500 text-slate-950 font-black text-xs px-4 py-1 rounded-r-full uppercase tracking-wider z-10 shrink-0 shadow-lg flex items-center gap-2 ml-4">
@@ -120,235 +64,96 @@
       </div>
       <div class="overflow-hidden w-full relative flex items-center">
         <div id="ticker-text" class="animate-marquee font-bold text-sm tracking-wide text-slate-100 pl-8">
-          Seja bem-vindo! Acompanhe aqui todas as novidades, ofertas e informações atualizadas em tempo real.
+          Carregando programação...
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- CONTROL BUTTON -->
-  <button onclick="toggleModal()" class="absolute bottom-16 left-6 z-40 bg-slate-900/80 hover:bg-slate-800 text-slate-300 p-3 rounded-full border border-slate-700 shadow-xl transition-all duration-300 focus:outline-none opacity-40 hover:opacity-100">
-    <i class="fa-solid fa-gear text-lg"></i>
-  </button>
-
-  <!-- CONFIGURATION MODAL -->
-  <div id="config-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-      
-      <!-- MODAL HEADER -->
-      <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-        <div class="flex items-center gap-3">
-          <i class="fa-solid fa-[#00e676] fa-sliders text-emerald-400 text-xl"></i>
-          <h2 class="text-xl font-bold text-white">Configurações do Player</h2>
-        </div>
-        <button onclick="toggleModal()" class="text-slate-400 hover:text-white p-2 rounded-lg transition-colors">
-          <i class="fa-solid fa-xmark text-xl"></i>
-        </button>
-      </div>
-
-      <!-- MODAL BODY -->
-      <div class="p-6 overflow-y-auto space-y-6 custom-scrollbar">
-        
-        <!-- MEDIA URLS -->
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">URLs das Mídias (Uma por linha - Imagens e Vídeos MP4):</label>
-          <textarea id="cfg-urls" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono focus:border-emerald-500 focus:outline-none transition-colors" placeholder="https://exemplo.com/imagem1.png&#10;https://exemplo.com/video1.mp4"></textarea>
-          <p class="text-[11px] text-slate-500 mt-1">Cole os links diretos das suas imagens (.png, .jpg, .webp) ou vídeos (.mp4).</p>
-        </div>
-
-        <!-- DURATION & BRAND -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Duração da Imagem (Segundos):</label>
-            <input type="number" id="cfg-duration" min="3" max="300" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Nome do Estabelecimento:</label>
-            <input type="text" id="cfg-brand" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
-          </div>
-        </div>
-
-        <!-- LOGO & WEATHER CITY -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">URL da Logo (Opcional):</label>
-            <input type="text" id="cfg-logo" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="https://...">
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Cidade (Previsão do Tempo):</label>
-            <input type="text" id="cfg-city" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="São Paulo">
-          </div>
-        </div>
-
-        <!-- TICKER TEXT -->
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Texto do Letreiro (Rodapé):</label>
-          <input type="text" id="cfg-ticker" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
-        </div>
-
-        <!-- QR CODE CONFIGURATION -->
-        <div class="border-t border-slate-800 pt-4 space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Exibir QR Code Interativo:</span>
-            <input type="checkbox" id="cfg-qr-enable" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer">
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Link do QR Code:</label>
-              <input type="text" id="cfg-qr-link" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Título do QR Code:</label>
-              <input type="text" id="cfg-qr-title" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- MODAL FOOTER -->
-      <div class="px-6 py-4 border-t border-slate-800 flex justify-end gap-3 bg-slate-900/50">
-        <button onclick="toggleModal()" class="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 font-semibold text-sm hover:bg-slate-800 transition-colors">
-          Cancelar
-        </button>
-        <button onclick="saveConfig()" class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all">
-          Salvar e Aplicar
-        </button>
-      </div>
-
     </div>
   </div>
 
   <script>
-    // DEFAULT CONFIGURATION
-    const defaultConfig = {
-      urls: [
-        "https://images.unsplash.com/photo-1542744094-3a31b272c490?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1920&q=80"
-      ],
-      duration: 10,
-      brand: "MÍDIA INDOOR",
-      logo: "https://cdn-icons-png.flaticon.com/512/888/888859.png",
-      city: "São Paulo",
-      ticker: "Seja bem-vindo! Acompanhe nossas novidades e ofertas na tela.",
-      qrEnable: true,
-      qrLink: "https://google.com",
-      qrTitle: "Acesse nosso site"
-    };
+    const GITHUB_USER = "cleciodeanjo01-coder";
+    const GITHUB_REPO = "tv-indoor"; 
+    const JSON_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/playlist.json`;
 
-    let config = { ...defaultConfig };
     let playlist = [];
     let currentIndex = 0;
     let timer = null;
-    let qrcodeObj = null;
+    let imageDuration = 10;
+    let lastJsonRaw = "";
+    let currentQrLink = "";
 
-    // INITIALIZATION
-    function init() {
-      loadSavedConfig();
-      setupClock();
-      fetchWeather();
-      setupKeyboardShortcuts();
-      renderPlaylist();
+    function setupClock() {
+      function update() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById("clock-time").innerText = `${hours}:${minutes}:${seconds}`;
+
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        document.getElementById("clock-date").innerText = `${day}/${month}/${year}`;
+      }
+      setInterval(update, 1000);
+      update();
     }
 
-    // LOAD CONFIG FROM LOCALSTORAGE
-    function loadSavedConfig() {
-      const saved = localStorage.getItem("indoor_app_config");
-      if (saved) {
-        try {
-          config = { ...defaultConfig, ...JSON.parse(saved) };
-        } catch (e) {
-          config = { ...defaultConfig };
+    async function fetchPlaylist() {
+      try {
+        const response = await fetch(`${JSON_URL}?t=${new Date().getTime()}`);
+        if (!response.ok) return;
+
+        const textData = await response.text();
+        if (textData === lastJsonRaw) return; 
+
+        lastJsonRaw = textData;
+        const data = JSON.parse(textData);
+
+        if (data.brand) document.getElementById("brand-title").innerText = data.brand;
+        if (data.ticker) document.getElementById("ticker-text").innerText = data.ticker;
+        if (data.duration) imageDuration = parseInt(data.duration) || 10;
+
+        // Gerenciamento do QR Code na tela
+        const qrBox = document.getElementById("qr-box");
+        if (data.qrLink && data.qrLink.trim() !== "") {
+          qrBox.classList.remove("hidden");
+          if (data.qrTitle) {
+            document.getElementById("qr-label").innerText = data.qrTitle;
+          }
+          if (currentQrLink !== data.qrLink) {
+            currentQrLink = data.qrLink;
+            document.getElementById("qrcode").innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+              text: currentQrLink,
+              width: 120,
+              height: 120,
+              colorDark: "#000000",
+              colorLight: "#ffffff",
+              correctLevel: QRCode.CorrectLevel.H
+            });
+          }
+        } else {
+          qrBox.classList.add("hidden");
+          currentQrLink = "";
         }
-      }
-      applyConfigToUI();
-    }
 
-    // APPLY CONFIG TO INTERFACE
-    function applyConfigToUI() {
-      document.getElementById("brand-title").innerText = config.brand || "MÍDIA INDOOR";
-      
-      const logoEl = document.getElementById("brand-logo");
-      if (config.logo) {
-        logoEl.src = config.logo;
-        logoEl.classList.remove("hidden");
-      } else {
-        logoEl.classList.add("hidden");
-      }
+        if (data.urls && Array.isArray(data.urls) && data.urls.length > 0) {
+          playlist = data.urls.map(url => {
+            const isVideo = url.endsWith(".mp4") || url.endsWith(".webm") || url.includes("video");
+            return { type: isVideo ? "video" : "image", url: url };
+          });
 
-      document.getElementById("ticker-text").innerText = config.ticker || "";
-
-      // QR Code Update
-      const qrCard = document.getElementById("qrcode-card");
-      if (config.qrEnable) {
-        qrCard.classList.remove("hidden");
-        document.getElementById("qrcode-title").innerText = config.qrTitle || "Acesse";
-        
-        const container = document.getElementById("qrcode-container");
-        container.innerHTML = "";
-        qrcodeObj = new QRCode(container, {
-          text: config.qrLink || "https://google.com",
-          width: 90,
-          height: 90,
-          colorDark : "#000000",
-          colorLight : "#ffffff",
-          correctLevel : QRCode.CorrectLevel.H
-        });
-      } else {
-        qrCard.classList.add("hidden");
-      }
-
-      // Populate Form Fields
-      document.getElementById("cfg-urls").value = (config.urls || []).join("\n");
-      document.getElementById("cfg-duration").value = config.duration;
-      document.getElementById("cfg-brand").value = config.brand;
-      document.getElementById("cfg-logo").value = config.logo;
-      document.getElementById("cfg-city").value = config.city;
-      document.getElementById("cfg-ticker").value = config.ticker;
-      document.getElementById("cfg-qr-enable").checked = config.qrEnable;
-      document.getElementById("cfg-qr-link").value = config.qrLink;
-      document.getElementById("cfg-qr-title").value = config.qrTitle;
-    }
-
-    // SAVE CONFIG
-    function saveConfig() {
-      const urlsRaw = document.getElementById("cfg-urls").value;
-      const urlsParsed = urlsRaw.split("\n").map(u => u.trim()).filter(u => u.length > 0);
-
-      config = {
-        urls: urlsParsed.length > 0 ? urlsParsed : defaultConfig.urls,
-        duration: parseInt(document.getElementById("cfg-duration").value) || 10,
-        brand: document.getElementById("cfg-brand").value,
-        logo: document.getElementById("cfg-logo").value,
-        city: document.getElementById("cfg-city").value,
-        ticker: document.getElementById("cfg-ticker").value,
-        qrEnable: document.getElementById("cfg-qr-enable").checked,
-        qrLink: document.getElementById("cfg-qr-link").value,
-        qrTitle: document.getElementById("cfg-qr-title").value
-      };
-
-      localStorage.setItem("indoor_app_config", JSON.stringify(config));
-      applyConfigToUI();
-      fetchWeather();
-      toggleModal();
-      renderPlaylist();
-    }
-
-    // RENDER PLAYLIST & START CYCLE
-    function renderPlaylist() {
-      if (timer) clearTimeout(timer);
-      currentIndex = 0;
-      playlist = config.urls.map(url => {
-        const isVideo = url.endsWith(".mp4") || url.endsWith(".webm") || url.includes("video");
-        return { type: isVideo ? "video" : "image", url: url };
-      });
-
-      if (playlist.length > 0) {
-        playNextMedia();
+          if (!timer) {
+            currentIndex = 0;
+            playNextMedia();
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao buscar playlist central do GitHub:", err);
       }
     }
 
-    // PLAY MEDIA CYCLE
     function playNextMedia() {
       if (playlist.length === 0) return;
 
@@ -370,7 +175,7 @@
         timer = setTimeout(() => {
           currentIndex = (currentIndex + 1) % playlist.length;
           playNextMedia();
-        }, (config.duration || 10) * 1000);
+        }, imageDuration * 1000);
 
       } else if (currentItem.type === "video") {
         const video = document.createElement("video");
@@ -403,56 +208,9 @@
       }
     }
 
-    // CLOCK LOGIC
-    function setupClock() {
-      function update() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        document.getElementById("clock-time").innerText = `${hours}:${minutes}:${seconds}`;
-
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        document.getElementById("clock-date").innerText = `${day}/${month}/${year}`;
-      }
-      setInterval(update, 1000);
-      update();
-    }
-
-    // WEATHER API
-    async function fetchWeather() {
-      const city = config.city || "São Paulo";
-      document.getElementById("weather-city").innerText = city;
-      
-      try {
-        const res = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
-        const data = await res.json();
-        const temp = data.current_condition[0].temp_C;
-        document.getElementById("weather-temp").innerText = `${temp}°C`;
-      } catch (e) {
-        document.getElementById("weather-temp").innerText = "28°C";
-      }
-    }
-
-    // MODAL TOGGLE
-    function toggleModal() {
-      const modal = document.getElementById("config-modal");
-      modal.classList.toggle("hidden");
-    }
-
-    // SHORTCUTS (PRESS 'C' TO OPEN SETTINGS)
-    function setupKeyboardShortcuts() {
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "c" || e.key === "C") {
-          toggleModal();
-        }
-      });
-    }
-
-    // START ON LOAD
-    window.onload = init;
+    setupClock();
+    fetchPlaylist();
+    setInterval(fetchPlaylist, 20000);
   </script>
 </body>
 </html>
