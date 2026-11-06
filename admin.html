@@ -30,7 +30,7 @@
     <div class="space-y-3">
       <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Mídias em Exibição (Clique em Excluir para remover):</h2>
       <div id="lista-midias" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-        <p class="text-xs text-slate-500 italic">A carregar mídias do GitHub...</p>
+        <p class="text-xs text-slate-500 italic">A carregar mídias...</p>
       </div>
     </div>
 
@@ -60,11 +60,11 @@
     <!-- CONFIGURAÇÕES GERAIS -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-800 pt-4">
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Duração por Foto (Segundos):</label>
+        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">Duração por Foto (Segundos):</label>
         <input type="number" id="inp-duration" value="10" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
       </div>
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Texto do Letreiro (Rodapé):</label>
+        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">Texto do Letreiro (Rodapé):</label>
         <input type="text" id="inp-ticker" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
       </div>
     </div>
@@ -93,19 +93,25 @@
 
     async function carregarDadosRemotos() {
       const statusEl = document.getElementById("status-msg");
-      statusEl.innerText = "A carregar dados do GitHub...";
+      statusEl.innerText = "A carregar dados...";
 
       try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
+        // Usa a URL raw com parâmetro de tempo para evitar cache e bloqueios CORS
+        const rawUrl = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${FILE_PATH}?t=${new Date().getTime()}`;
+        const res = await fetch(rawUrl);
+        
+        if (res.ok) {
+          playlistData = await res.json();
+        }
+
+        // Busca também o SHA necessário para o upload posterior
+        const apiRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           headers: { Authorization: `token ${TOKEN}` }
         });
-        if (!res.ok) throw new Error("Erro ao aceder ao playlist.json.");
-
-        const data = await res.json();
-        currentSha = data.sha;
-        
-        const contentDecoded = decodeURIComponent(escape(atob(data.content)));
-        playlistData = JSON.parse(contentDecoded);
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          currentSha = apiData.sha;
+        }
 
         document.getElementById("inp-duration").value = playlistData.duration || 10;
         document.getElementById("inp-ticker").value = playlistData.ticker || "";
@@ -115,7 +121,7 @@
         renderizarListaMidias();
         statusEl.innerHTML = `<span class='text-emerald-400 font-bold'>Conectado com sucesso!</span>`;
       } catch (err) {
-        statusEl.innerHTML = `<span class='text-red-400'>${err.message}</span>`;
+        statusEl.innerHTML = `<span class='text-red-400'>Erro ao carregar: ${err.message}</span>`;
       }
     }
 
@@ -170,7 +176,7 @@
       statusEl.innerText = "A publicar alterações...";
 
       try {
-        // Passo extra de segurança: busca o SHA mais recente antes de fazer o PUT para evitar conflitos
+        // Atualiza o SHA na hora de salvar para garantir que está sincronizado
         const getRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           headers: { Authorization: `token ${TOKEN}` }
         });
