@@ -77,7 +77,7 @@
       </button>
       <p id="status-msg" class="text-xs text-center text-slate-400 mt-2 font-semibold"></p>
       
-      <!-- CAIXA DE RELATÓRIO DE ERRO DETALHADO -->
+      <!-- CAIXA DE RELATÓRIO DE ERRO -->
       <div id="debug-box" class="mt-3 p-3 bg-black/60 border border-red-500/30 rounded-xl text-[11px] font-mono text-red-300 hidden max-h-32 overflow-y-auto">
         <span class="font-bold text-red-400">Relatório Técnico do Erro:</span>
         <div id="debug-content"></div>
@@ -90,7 +90,7 @@
     const USER = "cleciodeanjo01-coder";
     const REPO = "tv-indoor"; 
     const FILE_PATH = "playlist.json";
-    const TOKEN = "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";
+    const TOKEN = "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";
 
     let playlistData = { brand: "MÍDIA INDOOR", duration: 10, ticker: "", qrLink: "", qrTitle: "", urls: [] };
     let currentSha = "";
@@ -109,7 +109,7 @@
         }
 
         const apiRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
-          headers: { Authorization: `Bearer ${TOKEN}` }
+          headers: { Authorization: `token ${TOKEN}` }
         });
         
         if (!apiRes.ok) {
@@ -193,7 +193,7 @@
 
       try {
         const getRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
-          headers: { Authorization: `Bearer ${TOKEN}` }
+          headers: { Authorization: `token ${TOKEN}` }
         });
         if (getRes.ok) {
           const getData = await getRes.json();
@@ -206,7 +206,7 @@
         const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${TOKEN}`,
+            Authorization: `token ${TOKEN}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
