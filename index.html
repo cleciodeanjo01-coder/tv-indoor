@@ -3,27 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mídia Indoor com QR Code</title>
+  <title>Mídia Indoor - Player Premium</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Biblioteca para gerar o QR Code automaticamente -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
+    
     * { user-select: none; box-sizing: border-box; }
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Montserrat', sans-serif; }
 
+    /* CAMADA DE BACKDROP DESFOCADO */
+    .bg-blur-layer {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover; filter: blur(25px) brightness(0.4); transform: scale(1.1);
+      transition: opacity 1s ease-in-out; z-index: 1;
+    }
+
+    /* CAMADA DE MÍDIA CENTRAL */
     .media-layer {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      object-fit: contain; opacity: 0; transition: opacity 1s ease-in-out; z-index: 1;
+      object-fit: contain; opacity: 0; transition: opacity 1s ease-in-out; z-index: 2;
     }
-    .media-layer.active { opacity: 1; z-index: 2; }
+    .media-layer.active { opacity: 1; }
 
     .glass-panel {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -32,39 +40,56 @@
 </head>
 <body class="relative w-screen h-screen overflow-hidden bg-black text-white">
 
-  <!-- CONTAINER DE MÍDIAS -->
-  <div id="player-container" class="relative w-full h-full flex items-center justify-center bg-black"></div>
+  <!-- BACKGROUND AMBIENTE DESFOCADO -->
+  <div id="bg-container" class="absolute inset-0 z-1 overflow-hidden"></div>
 
-  <!-- CABEÇALHO SUPERIOR -->
-  <div class="absolute top-6 left-6 right-6 z-30 flex justify-between items-start pointer-events-none">
-    <div id="brand-container" class="glass-panel px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl">
-      <span id="brand-title" class="font-extrabold text-lg tracking-wider text-white">MÍDIA INDOOR</span>
+  <!-- CONTAINER DE MÍDIA PRINCIPAL -->
+  <div id="player-container" class="relative w-full h-full flex items-center justify-center z-2"></div>
+
+  <!-- LOGO CABEÇALHO (CANTO SUPERIOR ESQUERDO) -->
+  <div class="absolute top-6 left-6 z-30 pointer-events-none">
+    <div class="glass-panel px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl">
+      <div class="w-7 h-7 bg-orange-600 rounded-lg flex items-center justify-center font-black text-xs text-white shadow-md">HTML</div>
+      <span id="brand-title" class="font-extrabold text-base tracking-wider text-white">MÍDIA INDOOR</span>
     </div>
+  </div>
 
+  <!-- CLIMA E RELÓGIO (CANTO SUPERIOR DIREITO) -->
+  <div class="absolute top-6 right-6 z-30 pointer-events-none flex items-center gap-4">
     <div class="glass-panel px-6 py-3 rounded-2xl flex items-center gap-6 shadow-2xl">
+      <!-- CLIMA (VICENTINÓPOLIS) -->
+      <div class="flex items-center gap-3 pr-4 border-r border-slate-700/60">
+        <i class="fa-solid fa-sun text-yellow-400 text-2xl animate-spin-slow"></i>
+        <div class="flex flex-col">
+          <span id="weather-temp" class="text-lg font-black leading-none text-white">26°C</span>
+          <span class="text-[10px] text-slate-300 font-bold tracking-widest uppercase mt-0.5">VICENTINÓPOLIS</span>
+        </div>
+      </div>
+      <!-- RELÓGIO -->
       <div class="flex flex-col text-right">
         <span id="clock-time" class="text-2xl font-black tracking-widest text-emerald-400 leading-none">00:00:00</span>
-        <span id="clock-date" class="text-xs text-slate-300 font-medium tracking-wide mt-1">--/--/----</span>
+        <span id="clock-date" class="text-[10px] text-slate-300 font-medium tracking-wide mt-1">--/--/----</span>
       </div>
     </div>
   </div>
 
-  <!-- WIDGET DO QR CODE FLUTUANTE (CANTO INFERIOR DIREITO) -->
-  <div id="qr-box" class="absolute bottom-16 right-6 z-40 glass-panel p-4 rounded-3xl shadow-2xl flex flex-col items-center gap-2 hidden border border-emerald-500/30">
-    <span id="qr-label" class="text-xs font-black uppercase tracking-wider text-emerald-400">Escaneie aqui</span>
+  <!-- WIDGET QR CODE (CANTO INFERIOR DIREITO) -->
+  <div id="qr-box" class="absolute bottom-16 right-6 z-40 glass-panel p-4 rounded-3xl shadow-2xl flex flex-col items-center gap-2 border border-emerald-500/20 max-w-[180px]">
     <div id="qrcode" class="bg-white p-2 rounded-2xl shadow-inner"></div>
+    <span id="qr-label" class="text-xs font-black uppercase tracking-wider text-white text-center mt-1">ACESSE NOSSO SITE</span>
+    <span class="text-[9px] text-slate-300 text-center leading-tight">Aponte a câmera do seu celular</span>
   </div>
 
   <!-- RODAPÉ LETREIRO -->
-  <div class="absolute bottom-0 left-0 w-full z-30 glass-panel border-t border-slate-800 py-3 overflow-hidden">
+  <div class="absolute bottom-0 left-0 w-full z-30 glass-panel border-t border-slate-800 py-2.5 overflow-hidden">
     <div class="flex items-center">
       <div class="bg-emerald-500 text-slate-950 font-black text-xs px-4 py-1 rounded-r-full uppercase tracking-wider z-10 shrink-0 shadow-lg flex items-center gap-2 ml-4">
-        <i class="fa-solid fa-bullhorn animate-pulse"></i>
-        <span>Avisos</span>
+        <i class="fa-solid fa-bullhorn"></i>
+        <span>AVISOS</span>
       </div>
       <div class="overflow-hidden w-full relative flex items-center">
         <div id="ticker-text" class="animate-marquee font-bold text-sm tracking-wide text-slate-100 pl-8">
-          Carregando programação...
+          Seja bem-vindo! Acompanhe nossas novidades e ofertas na tela.
         </div>
       </div>
     </div>
@@ -114,28 +139,31 @@
         if (data.ticker) document.getElementById("ticker-text").innerText = data.ticker;
         if (data.duration) imageDuration = parseInt(data.duration) || 10;
 
-        // Gerenciamento do QR Code na tela
+        // QR Code
         const qrBox = document.getElementById("qr-box");
         if (data.qrLink && data.qrLink.trim() !== "") {
           qrBox.classList.remove("hidden");
-          if (data.qrTitle) {
-            document.getElementById("qr-label").innerText = data.qrTitle;
-          }
+          if (data.qrTitle) document.getElementById("qr-label").innerText = data.qrTitle;
           if (currentQrLink !== data.qrLink) {
             currentQrLink = data.qrLink;
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), {
               text: currentQrLink,
-              width: 120,
-              height: 120,
+              width: 110,
+              height: 110,
               colorDark: "#000000",
               colorLight: "#ffffff",
               correctLevel: QRCode.CorrectLevel.H
             });
           }
         } else {
-          qrBox.classList.add("hidden");
-          currentQrLink = "";
+          // Exibe QR Code padrão caso não esteja configurado
+          document.getElementById("qrcode").innerHTML = "";
+          new QRCode(document.getElementById("qrcode"), {
+            text: "https://cleciodeanjo01-coder.github.io/tv-indoor/",
+            width: 110,
+            height: 110
+          });
         }
 
         if (data.urls && Array.isArray(data.urls) && data.urls.length > 0) {
@@ -150,7 +178,7 @@
           }
         }
       } catch (err) {
-        console.error("Erro ao buscar playlist central do GitHub:", err);
+        console.error("Erro ao carregar a playlist central:", err);
       }
     }
 
@@ -158,10 +186,20 @@
       if (playlist.length === 0) return;
 
       const container = document.getElementById("player-container");
+      const bgContainer = document.getElementById("bg-container");
       const currentItem = playlist[currentIndex];
-      const oldElements = container.querySelectorAll('.media-layer');
+      
+      const oldMedia = container.querySelectorAll('.media-layer');
+      const oldBg = bgContainer.querySelectorAll('.bg-blur-layer');
 
       if (currentItem.type === "image") {
+        // Imagem desfocada de fundo
+        const bgImg = document.createElement("img");
+        bgImg.src = currentItem.url;
+        bgImg.className = "bg-blur-layer";
+        bgContainer.appendChild(bgImg);
+
+        // Imagem principal nítida no centro
         const img = document.createElement("img");
         img.src = currentItem.url;
         img.className = "media-layer";
@@ -169,7 +207,8 @@
 
         setTimeout(() => {
           img.classList.add("active");
-          oldElements.forEach(el => el.remove());
+          oldMedia.forEach(el => el.remove());
+          oldBg.forEach(el => el.remove());
         }, 50);
 
         timer = setTimeout(() => {
@@ -187,7 +226,8 @@
 
         video.onloadeddata = () => {
           video.classList.add("active");
-          oldElements.forEach(el => el.remove());
+          oldMedia.forEach(el => el.remove());
+          oldBg.forEach(el => el.remove());
         };
 
         video.onended = () => {
