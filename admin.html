@@ -75,7 +75,13 @@
         <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
         PUBLICAR ALTERAÇÕES PARA TODAS AS TVS
       </button>
-      <p id="status-msg" class="text-xs text-center text-slate-400 mt-2"></p>
+      <p id="status-msg" class="text-xs text-center text-slate-400 mt-2 font-semibold"></p>
+      
+      <!-- CAIXA DE RELATÓRIO DE ERRO DETALHADO -->
+      <div id="debug-box" class="mt-3 p-3 bg-black/60 border border-red-500/30 rounded-xl text-[11px] font-mono text-red-300 hidden max-h-32 overflow-y-auto">
+        <span class="font-bold text-red-400">Relatório Técnico do Erro:</span>
+        <div id="debug-content"></div>
+      </div>
     </div>
 
   </div>
@@ -105,10 +111,14 @@
         const apiRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           headers: { Authorization: `Bearer ${TOKEN}` }
         });
-        if (apiRes.ok) {
-          const apiData = await apiRes.json();
-          currentSha = apiData.sha;
+        
+        if (!apiRes.ok) {
+          const errJson = await apiRes.json();
+          throw new Error(`Erro ao buscar arquivo: ${apiRes.status} - ${errJson.message}`);
         }
+
+        const apiData = await apiRes.json();
+        currentSha = apiData.sha;
 
         document.getElementById("inp-duration").value = playlistData.duration || 10;
         document.getElementById("inp-ticker").value = playlistData.ticker || "";
@@ -118,7 +128,8 @@
         renderizarListaMidias();
         statusEl.innerHTML = `<span class='text-emerald-400 font-bold'>Conectado com sucesso!</span>`;
       } catch (err) {
-        statusEl.innerHTML = `<span class='text-red-400'>Erro ao carregar: ${err.message}</span>`;
+        statusEl.innerHTML = `<span class='text-red-400'>Erro ao carregar dados. Veja abaixo:</span>`;
+        mostrarErroDebug(err.message);
       }
     }
 
@@ -162,8 +173,16 @@
       renderizarListaMidias();
     }
 
+    function mostrarErroDebug(mensagem) {
+      const box = document.getElementById("debug-box");
+      const content = document.getElementById("debug-content");
+      box.classList.remove("hidden");
+      content.innerText = mensagem;
+    }
+
     async function salvarAlteracoesGitHub() {
       const statusEl = document.getElementById("status-msg");
+      document.getElementById("debug-box").classList.add("hidden");
 
       playlistData.duration = parseInt(document.getElementById("inp-duration").value) || 10;
       playlistData.ticker = document.getElementById("inp-ticker").value;
@@ -199,7 +218,7 @@
 
         if (!res.ok) {
           const errDetail = await res.json();
-          throw new Error(errDetail.message || "Erro desconhecido na API");
+          throw new Error(`HTTP ${res.status}: ${errDetail.message}`);
         }
 
         const responseData = await res.json();
@@ -207,7 +226,8 @@
 
         statusEl.innerHTML = `<span class='text-emerald-400 font-bold'>✅ Atualizado com sucesso em todas as TVs!</span>`;
       } catch (err) {
-        statusEl.innerHTML = `<span class='text-red-400'>Erro ao salvar: ${err.message}</span>`;
+        statusEl.innerHTML = `<span class='text-red-400 font-bold'>❌ Erro ao salvar alterações</span>`;
+        mostrarErroDebug(err.message);
       }
     }
   </script>
