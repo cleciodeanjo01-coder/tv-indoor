@@ -96,15 +96,12 @@
       statusEl.innerText = "A carregar dados...";
 
       try {
-        // Usa a URL raw com parâmetro de tempo para evitar cache e bloqueios CORS
         const rawUrl = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${FILE_PATH}?t=${new Date().getTime()}`;
         const res = await fetch(rawUrl);
-        
         if (res.ok) {
           playlistData = await res.json();
         }
 
-        // Busca também o SHA necessário para o upload posterior
         const apiRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           headers: { Authorization: `token ${TOKEN}` }
         });
@@ -176,7 +173,6 @@
       statusEl.innerText = "A publicar alterações...";
 
       try {
-        // Atualiza o SHA na hora de salvar para garantir que está sincronizado
         const getRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           headers: { Authorization: `token ${TOKEN}` }
         });
@@ -185,7 +181,9 @@
           currentSha = getData.sha;
         }
 
-        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(playlistData, null, 2))));
+        // Codificação correta para suportar acentos e caracteres especiais no GitHub API
+        const jsonString = JSON.stringify(playlistData, null, 2);
+        const updatedContent = btoa(unescape(encodeURIComponent(jsonString)));
 
         const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           method: "PUT",
@@ -200,7 +198,10 @@
           })
         });
 
-        if (!res.ok) throw new Error("Erro ao salvar alterações no GitHub");
+        if (!res.ok) {
+          const errDetail = await res.json();
+          throw new Error(errDetail.message || "Erro desconhecido na API");
+        }
 
         const responseData = await res.json();
         currentSha = responseData.content.sha;
