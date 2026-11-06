@@ -103,7 +103,7 @@
         }
 
         const apiRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
-          headers: { Authorization: `token ${TOKEN}` }
+          headers: { Authorization: `Bearer ${TOKEN}` }
         });
         if (apiRes.ok) {
           const apiData = await apiRes.json();
@@ -174,7 +174,7 @@
 
       try {
         const getRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
-          headers: { Authorization: `token ${TOKEN}` }
+          headers: { Authorization: `Bearer ${TOKEN}` }
         });
         if (getRes.ok) {
           const getData = await getRes.json();
@@ -187,7 +187,7 @@
         const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           method: "PUT",
           headers: {
-            Authorization: `token ${TOKEN}`,
+            Authorization: `Bearer ${TOKEN}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
