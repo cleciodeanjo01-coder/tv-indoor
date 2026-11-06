@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <!-- LISTA DE MÍDIAS ATUAIS (COM BOTÃO DE EXCLUIR) -->
+    <!-- LISTA DE MÍDIAS ATUAIS -->
     <div class="space-y-3">
       <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Mídias em Exibição (Clique em Excluir para remover):</h2>
       <div id="lista-midias" class="space-y-2 max-h-52 overflow-y-auto pr-1">
@@ -86,7 +86,7 @@
     const FILE_PATH = "playlist.json";
     const TOKEN = "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";
 
-    let playlistData = { brand: "TV INTERNA", duration: 10, ticker: "", qrLink: "", qrTitle: "", urls: [] };
+    let playlistData = { brand: "MÍDIA INDOOR", duration: 10, ticker: "", qrLink: "", qrTitle: "", urls: [] };
     let currentSha = "";
 
     window.onload = () => { carregarDadosRemotos(); };
@@ -99,7 +99,7 @@
         const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           headers: { Authorization: `token ${TOKEN}` }
         });
-        if (!res.ok) throw new Error("Erro ao aceder ao playlist.json. Certifique-se de que o ficheiro existe no repositório.");
+        if (!res.ok) throw new Error("Erro ao aceder ao playlist.json.");
 
         const data = await res.json();
         currentSha = data.sha;
@@ -167,11 +167,20 @@
       playlistData.qrLink = document.getElementById("inp-qrlink").value.trim();
       playlistData.qrTitle = document.getElementById("inp-qrtitle").value.trim();
 
-      statusEl.innerText = "A publicar alterações para todas as TVs...";
-
-      const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(playlistData, null, 2))));
+      statusEl.innerText = "A publicar alterações...";
 
       try {
+        // Passo extra de segurança: busca o SHA mais recente antes de fazer o PUT para evitar conflitos
+        const getRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
+          headers: { Authorization: `token ${TOKEN}` }
+        });
+        if (getRes.ok) {
+          const getData = await getRes.json();
+          currentSha = getData.sha;
+        }
+
+        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(playlistData, null, 2))));
+
         const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
           method: "PUT",
           headers: {
@@ -179,7 +188,7 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            message: "Atualização de mídias, QR Code e letreiro via Painel ADM",
+            message: "Atualização via Painel ADM Mídia Indoor",
             content: updatedContent,
             sha: currentSha
           })
@@ -190,7 +199,7 @@
         const responseData = await res.json();
         currentSha = responseData.content.sha;
 
-        statusEl.innerHTML = `<span class='text-emerald-400 font-bold'>✅ Atualizado! As alterações já estão no ar nas TVs!</span>`;
+        statusEl.innerHTML = `<span class='text-emerald-400 font-bold'>✅ Atualizado com sucesso em todas as TVs!</span>`;
       } catch (err) {
         statusEl.innerHTML = `<span class='text-red-400'>Erro ao salvar: ${err.message}</span>`;
       }
