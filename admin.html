@@ -181,7 +181,6 @@
           currentSha = getData.sha;
         }
 
-        // Codificação correta para suportar acentos e caracteres especiais no GitHub API
         const jsonString = JSON.stringify(playlistData, null, 2);
         const updatedContent = btoa(unescape(encodeURIComponent(jsonString)));
 
