@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Controle - Mídia Indoor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
+    body { font-family: 'Montserrat', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen p-4 md:p-8 flex justify-center items-center">
+
+  <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl space-y-6">
+    
+    <!-- HEADER -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-sliders text-emerald-400 text-2xl"></i>
+        <div>
+          <h1 class="text-xl font-bold">Painel ADM - Gerenciador</h1>
+          <p class="text-xs text-slate-400">Adicione, exclua mídias e configure o QR Code</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LISTA DE MÍDIAS ATUAIS (COM BOTÃO DE EXCLUIR) -->
+    <div class="space-y-3">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Mídias em Exibição (Clique em Excluir para remover):</h2>
+      <div id="lista-midias" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+        <p class="text-xs text-slate-500 italic">A carregar mídias do GitHub...</p>
+      </div>
+    </div>
+
+    <!-- ADICIONAR NOVA MÍDIA -->
+    <div class="space-y-2 border-t border-slate-800 pt-4">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Adicionar Nova URL de Imagem/Vídeo:</h2>
+      <div class="flex gap-2">
+        <input type="text" id="nova-url" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:border-emerald-500 focus:outline-none">
+        <button onclick="adicionarMidia()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 rounded-xl text-xs shrink-0 flex items-center gap-1">
+          <i class="fa-solid fa-plus"></i> Adicionar
+        </button>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÕES DO QR CODE E RODAPÉ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-800 pt-4">
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">Link do QR Code (WhatsApp/Site):</label>
+        <input type="text" id="inp-qrlink" placeholder="https://wa.me/55..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">Título do QR Code:</label>
+        <input type="text" id="inp-qrtitle" placeholder="Ex: Chame no Zap" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÕES GERAIS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-800 pt-4">
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Duração por Foto (Segundos):</label>
+        <input type="number" id="inp-duration" value="10" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Texto do Letreiro (Rodapé):</label>
+        <input type="text" id="inp-ticker" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+      </div>
+    </div>
+
+    <!-- BOTÃO SALVAR TUDO -->
+    <div class="pt-2">
+      <button onclick="salvarAlteracoesGitHub()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2">
+        <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+        PUBLICAR ALTERAÇÕES PARA TODAS AS TVS
+      </button>
+      <p id="status-msg" class="text-xs text-center text-slate-400 mt-2"></p>
+    </div>
+
+  </div>
+
+  <script>
+    const USER = "cleciodeanjo01-coder";
+    const REPO = "tv-indoor"; 
+    const FILE_PATH = "playlist.json";
+    const TOKEN = "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";
+
+    let playlistData = { brand: "TV INTERNA", duration: 10, ticker: "", qrLink: "", qrTitle: "", urls: [] };
+    let currentSha = "";
+
+    window.onload = () => { carregarDadosRemotos(); };
+
+    async function carregarDadosRemotos() {
+      const statusEl = document.getElementById("status-msg");
+      statusEl.innerText = "A carregar dados do GitHub...";
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
+          headers: { Authorization: `token ${TOKEN}` }
+        });
+        if (!res.ok) throw new Error("Erro ao aceder ao playlist.json. Certifique-se de que o ficheiro existe no repositório.");
+
+        const data = await res.json();
+        currentSha = data.sha;
+        
+        const contentDecoded = decodeURIComponent(escape(atob(data.content)));
+        playlistData = JSON.parse(contentDecoded);
+
+        document.getElementById("inp-duration").value = playlistData.duration || 10;
+        document.getElementById("inp-ticker").value = playlistData.ticker || "";
+        document.getElementById("inp-qrlink").value = playlistData.qrLink || "";
+        document.getElementById("inp-qrtitle").value = playlistData.qrTitle || "";
+
+        renderizarListaMidias();
+        statusEl.innerHTML = `<span class='text-emerald-400 font-bold'>Conectado com sucesso!</span>`;
+      } catch (err) {
+        statusEl.innerHTML = `<span class='text-red-400'>${err.message}</span>`;
+      }
+    }
+
+    function renderizarListaMidias() {
+      const container = document.getElementById("lista-midias");
+      container.innerHTML = "";
+
+      if (!playlistData.urls || playlistData.urls.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-500 italic">Nenhuma mídia cadastrada.</p>`;
+        return;
+      }
+
+      playlistData.urls.forEach((url, index) => {
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 gap-2";
+        item.innerHTML = `
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span class="text-xs font-bold text-emerald-400">#${index + 1}</span>
+            <span class="text-xs text-slate-300 truncate max-w-[280px] font-mono">${url}</span>
+          </div>
+          <button onclick="excluirMidia(${index})" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0">
+            <i class="fa-solid fa-trash"></i> Excluir
+          </button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function excluirMidia(index) {
+      playlistData.urls.splice(index, 1);
+      renderizarListaMidias();
+    }
+
+    function adicionarMidia() {
+      const input = document.getElementById("nova-url");
+      const url = input.value.trim();
+      if (!url) return;
+      if (!playlistData.urls) playlistData.urls = [];
+      playlistData.urls.push(url);
+      input.value = "";
+      renderizarListaMidias();
+    }
+
+    async function salvarAlteracoesGitHub() {
+      const statusEl = document.getElementById("status-msg");
+
+      playlistData.duration = parseInt(document.getElementById("inp-duration").value) || 10;
+      playlistData.ticker = document.getElementById("inp-ticker").value;
+      playlistData.qrLink = document.getElementById("inp-qrlink").value.trim();
+      playlistData.qrTitle = document.getElementById("inp-qrtitle").value.trim();
+
+      statusEl.innerText = "A publicar alterações para todas as TVs...";
+
+      const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(playlistData, null, 2))));
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `token ${TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: "Atualização de mídias, QR Code e letreiro via Painel ADM",
+            content: updatedContent,
+            sha: currentSha
+          })
+        });
+
+        if (!res.ok) throw new Error("Erro ao salvar alterações no GitHub");
+
+        const responseData = await res.json();
+        currentSha = responseData.content.sha;
+
+        statusEl.innerHTML = `<span class='text-emerald-400 font-bold'>✅ Atualizado! As alterações já estão no ar nas TVs!</span>`;
+      } catch (err) {
+        statusEl.innerHTML = `<span class='text-red-400'>Erro ao salvar: ${err.message}</span>`;
+      }
+    }
+  </script>
+</body>
+</html>
