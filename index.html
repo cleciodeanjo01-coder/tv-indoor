@@ -17,13 +17,13 @@
     .bg-blur-layer {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       object-fit: cover; filter: blur(25px) brightness(0.4); transform: scale(1.1);
-      transition: opacity 1s ease-in-out; z-index: 1;
+      transition: opacity 0.3s ease-in-out; z-index: 1;
     }
 
     /* CAMADA DE MÍDIA CENTRAL */
     .media-layer {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      object-fit: contain; opacity: 0; transition: opacity 1s ease-in-out; z-index: 2;
+      object-fit: contain; opacity: 0; transition: opacity 0.3s ease-in-out; z-index: 2;
     }
     .media-layer.active { opacity: 1; }
 
@@ -126,11 +126,13 @@
 
     async function fetchPlaylist() {
       try {
-        const response = await fetch(`${JSON_URL}?t=${new Date().getTime()}`, {
+        const cacheBuster = `${new Date().getTime()}_${Math.random()}`;
+        const response = await fetch(`${JSON_URL}?t=${cacheBuster}`, {
           cache: 'no-store',
           headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           }
         });
         
@@ -154,8 +156,8 @@
             return {
               type: isVideo ? "video" : "image",
               url: mediaUrl,
-              qrLink: item.qrLink || data.qrLink || "",
-              qrTitle: item.qrTitle || data.qrTitle || "ACESSE NOSSO SITE"
+              qrLink: (typeof item === "object" && item.qrLink) ? item.qrLink : (data.qrLink || ""),
+              qrTitle: (typeof item === "object" && item.qrTitle) ? item.qrTitle : (data.qrTitle || "ACESSE NOSSO SITE")
             };
           });
 
@@ -215,8 +217,9 @@
           img.classList.add("active");
           oldMedia.forEach(el => el.remove());
           oldBg.forEach(el => el.remove());
-        }, 50);
+        }, 10);
 
+        if (timer) clearTimeout(timer);
         timer = setTimeout(() => {
           currentIndex = (currentIndex + 1) % playlist.length;
           playNextMedia();
@@ -256,7 +259,7 @@
 
     setupClock();
     fetchPlaylist();
-    setInterval(fetchPlaylist, 20000);
+    setInterval(fetchPlaylist, 5000);
   </script>
 </body>
 </html>
