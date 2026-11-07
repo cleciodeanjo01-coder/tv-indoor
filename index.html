@@ -126,7 +126,14 @@
 
     async function fetchPlaylist() {
       try {
-        const response = await fetch(`${JSON_URL}?t=${new Date().getTime()}`);
+        const response = await fetch(`${JSON_URL}?t=${new Date().getTime()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+        
         if (!response.ok) return;
 
         const textData = await response.text();
@@ -139,37 +146,17 @@
         if (data.ticker) document.getElementById("ticker-text").innerText = data.ticker;
         if (data.duration) imageDuration = parseInt(data.duration) || 10;
 
-        // QR Code
-        const qrBox = document.getElementById("qr-box");
-        if (data.qrLink && data.qrLink.trim() !== "") {
-          qrBox.classList.remove("hidden");
-          if (data.qrTitle) document.getElementById("qr-label").innerText = data.qrTitle;
-          if (currentQrLink !== data.qrLink) {
-            currentQrLink = data.qrLink;
-            document.getElementById("qrcode").innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-              text: currentQrLink,
-              width: 110,
-              height: 110,
-              colorDark: "#000000",
-              colorLight: "#ffffff",
-              correctLevel: QRCode.CorrectLevel.H
-            });
-          }
-        } else {
-          // Exibe QR Code padrão caso não esteja configurado
-          document.getElementById("qrcode").innerHTML = "";
-          new QRCode(document.getElementById("qrcode"), {
-            text: "https://cleciodeanjo01-coder.github.io/tv-indoor/",
-            width: 110,
-            height: 110
-          });
-        }
-
         if (data.urls && Array.isArray(data.urls) && data.urls.length > 0) {
-          playlist = data.urls.map(url => {
-            const isVideo = url.endsWith(".mp4") || url.endsWith(".webm") || url.includes("video");
-            return { type: isVideo ? "video" : "image", url: url };
+          playlist = data.urls.map(item => {
+            const mediaUrl = typeof item === "string" ? item : item.url;
+            const isVideo = mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".webm") || mediaUrl.includes("video");
+            
+            return {
+              type: isVideo ? "video" : "image",
+              url: mediaUrl,
+              qrLink: item.qrLink || data.qrLink || "",
+              qrTitle: item.qrTitle || data.qrTitle || "ACESSE NOSSO SITE"
+            };
           });
 
           if (!timer) {
@@ -189,17 +176,36 @@
       const bgContainer = document.getElementById("bg-container");
       const currentItem = playlist[currentIndex];
       
+      const qrBox = document.getElementById("qr-box");
+      if (currentItem.qrLink && currentItem.qrLink.trim() !== "") {
+        qrBox.classList.remove("hidden");
+        document.getElementById("qr-label").innerText = currentItem.qrTitle;
+        
+        if (currentQrLink !== currentItem.qrLink) {
+          currentQrLink = currentItem.qrLink;
+          document.getElementById("qrcode").innerHTML = "";
+          new QRCode(document.getElementById("qrcode"), {
+            text: currentQrLink,
+            width: 110,
+            height: 110,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
+      } else {
+        qrBox.classList.add("hidden");
+      }
+      
       const oldMedia = container.querySelectorAll('.media-layer');
       const oldBg = bgContainer.querySelectorAll('.bg-blur-layer');
 
       if (currentItem.type === "image") {
-        // Imagem desfocada de fundo
         const bgImg = document.createElement("img");
         bgImg.src = currentItem.url;
         bgImg.className = "bg-blur-layer";
         bgContainer.appendChild(bgImg);
 
-        // Imagem principal nítida no centro
         const img = document.createElement("img");
         img.src = currentItem.url;
         img.className = "media-layer";
