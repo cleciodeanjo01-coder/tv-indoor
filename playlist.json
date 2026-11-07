@@ -1,85 +1,17 @@
-function playNextMedia() {
-      if (playlist.length === 0) return;
-
-      const container = document.getElementById("player-container");
-      const bgContainer = document.getElementById("bg-container");
-      const currentItem = playlist[currentIndex];
-      
-      // Atualiza o QR Code dinamicamente para o banner atual
-      const qrBox = document.getElementById("qr-box");
-      if (currentItem.qrLink && currentItem.qrLink.trim() !== "") {
-        qrBox.classList.remove("hidden");
-        document.getElementById("qr-label").innerText = currentItem.qrTitle;
-        
-        if (currentQrLink !== currentItem.qrLink) {
-          currentQrLink = currentItem.qrLink;
-          document.getElementById("qrcode").innerHTML = "";
-          new QRCode(document.getElementById("qrcode"), {
-            text: currentQrLink,
-            width: 110,
-            height: 110,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-          });
-        }
-      } else {
-        qrBox.classList.add("hidden");
-      }
-      
-      const oldMedia = container.querySelectorAll('.media-layer');
-      const oldBg = bgContainer.querySelectorAll('.bg-blur-layer');
-
-      if (currentItem.type === "image") {
-        const bgImg = document.createElement("img");
-        bgImg.src = currentItem.url;
-        bgImg.className = "bg-blur-layer";
-        bgContainer.appendChild(bgImg);
-
-        const img = document.createElement("img");
-        img.src = currentItem.url;
-        img.className = "media-layer";
-        container.appendChild(img);
-
-        setTimeout(() => {
-          img.classList.add("active");
-          oldMedia.forEach(el => el.remove());
-          oldBg.forEach(el => el.remove());
-        }, 50);
-
-        timer = setTimeout(() => {
-          currentIndex = (currentIndex + 1) % playlist.length;
-          playNextMedia();
-        }, imageDuration * 1000);
-
-      } else if (currentItem.type === "video") {
-        const video = document.createElement("video");
-        video.src = currentItem.url;
-        video.className = "media-layer";
-        video.autoplay = true;
-        video.muted = true;
-        video.playsInline = true;
-
-        video.onloadeddata = () => {
-          video.classList.add("active");
-          oldMedia.forEach(el => el.remove());
-          oldBg.forEach(el => el.remove());
-        };
-
-        video.onended = () => {
-          currentIndex = (currentIndex + 1) % playlist.length;
-          playNextMedia();
-        };
-
-        video.onerror = () => {
-          currentIndex = (currentIndex + 1) % playlist.length;
-          playNextMedia();
-        };
-
-        container.appendChild(video);
-        video.play().catch(() => {
-          currentIndex = (currentIndex + 1) % playlist.length;
-          playNextMedia();
-        });
-      }
+{
+  "brand": "MÍDIA INDOOR",
+  "duration": 10,
+  "ticker": "bem vindo",
+  "urls": [
+    {
+      "url": "https://plain-enam-prod-public.komododecks.com/202611/06/iRxMLFpap8SKi8aoQCBs/image.jpg",
+      "qrLink": "https://wa.me/5564992764404",
+      "qrTitle": "FALE NO WHATSAPP"
+    },
+    {
+      "url": "https://plain-enam-prod-public.komododecks.com/202611/07/Y8S5urfi50zpBQ5buBoM/image.webp",
+      "qrLink": "https://wa.me/5564992764404?text=Quero%20saber%20mais",
+      "qrTitle": "ATENDIMENTO"
     }
+  ]
+}
