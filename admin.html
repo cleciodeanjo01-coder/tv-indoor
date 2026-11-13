@@ -3,196 +3,660 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel de Controle - Mídia Indoor</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Painel Multi-Empresa - Gestão Profissional</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
-    body { font-family: 'Montserrat', sans-serif; }
-  </style>
-</head>
-<body class="bg-slate-950 text-white min-h-screen p-4 md:p-8 flex justify-center items-center">
-
-  <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl space-y-6">
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #dc2626;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+    body { background-color: var(--bg); color: var(--text); padding: 20px; }
+    .container { max-width: 1100px; margin: 0 auto; }
     
-    <!-- HEADER -->
-    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-      <div class="flex items-center gap-3">
-        <i class="fa-solid fa-sliders text-emerald-400 text-2xl"></i>
-        <div>
-          <h1 class="text-xl font-bold">Painel ADM - Gerenciador</h1>
-          <p class="text-xs text-slate-400">Adicione mídias, configure o QR Code e baixe o JSON</p>
-        </div>
-      </div>
-      <!-- Botão para carregar um playlist.json existente para edição -->
-      <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
-        <i class="fa-solid fa-file-arrow-up text-emerald-400"></i> Importar JSON
-        <input type="file" id="import-file" accept=".json" class="hidden" onchange="importarJson(event)">
-      </label>
-    </div>
+    #telaLogin {
+      max-width: 400px; margin: 60px auto; background: var(--card-bg); padding: 30px;
+      border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid var(--border);
+      text-align: center;
+    }
+    #telaLogin h2 { color: #60a5fa; margin-bottom: 20px; font-size: 22px; }
+    .auth-group { margin-bottom: 15px; text-align: left; }
+    .auth-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
+    .auth-group input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; color: white; font-size: 14px; outline: none; }
+    .auth-group input:focus { border-color: var(--primary); }
+    
+    .btn-auth { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; margin-top: 5px; }
+    .btn-auth:hover { background: var(--primary-hover); }
+    .link-esqueci { display: block; margin-top: 15px; font-size: 13px; color: #60a5fa; cursor: pointer; text-decoration: underline; }
 
-    <!-- LISTA DE MÍDIAS ATUAIS -->
-    <div class="space-y-3">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Mídias em Exibição (Clique em Excluir para remover):</h2>
-      <div id="lista-midias" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-        <p class="text-xs text-slate-500 italic">Nenhuma mídia cadastrada.</p>
-      </div>
-    </div>
+    #painelAdmin { display: none; }
 
-    <!-- ADICIONAR NOVA MÍDIA -->
-    <div class="space-y-2 border-t border-slate-800 pt-4">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Adicionar Nova URL de Imagem/Vídeo:</h2>
-      <div class="flex gap-2">
-        <input type="text" id="nova-url" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:border-emerald-500 focus:outline-none">
-        <button onclick="adicionarMidia()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 rounded-xl text-xs shrink-0 flex items-center gap-1">
-          <i class="fa-solid fa-plus"></i> Adicionar
-        </button>
-      </div>
-    </div>
-
-    <!-- CONFIGURAÇÕES DO QR CODE E RODAPÉ -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-800 pt-4">
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">Link do QR Code (WhatsApp/Site):</label>
-        <input type="text" id="inp-qrlink" placeholder="https://wa.me/55..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
-      </div>
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">Título do QR Code:</label>
-        <input type="text" id="inp-qrtitle" placeholder="Ex: Chame no Zap" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
-      </div>
-    </div>
-
-    <!-- CONFIGURAÇÕES GERAIS -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-800 pt-4">
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">Duração por Foto (Segundos):</label>
-        <input type="number" id="inp-duration" value="10" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
-      </div>
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">Texto do Letreiro (Rodapé):</label>
-        <input type="text" id="inp-ticker" placeholder="bem vindo" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
-      </div>
-    </div>
-
-    <!-- BOTÃO GERAR E BAIXAR JSON -->
-    <div class="pt-2">
-      <button onclick="gerarEBaixarJson()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2">
-        <i class="fa-solid fa-download text-lg"></i>
-        GERAR E BAIXAR "playlist.json"
-      </button>
-      <p id="status-msg" class="text-xs text-center text-slate-400 mt-2 font-semibold"></p>
-    </div>
-
-  </div>
-
-  <script>
-    // Estrutura exata solicitada
-    let playlistData = {
-      "brand": "MÍDIA INDOOR",
-      "duration": 10,
-      "ticker": "bem vindo",
-      "qrLink": "",
-      "qrTitle": "",
-      "urls": []
-    };
-
-    // Tenta carregar automaticamente o playlist.json atual do GitHub ao abrir a página
-    window.onload = async () => {
-      try {
-        const res = await fetch(`playlist.json?t=${new Date().getTime()}`);
-        if (res.ok) {
-          const data = await res.json();
-          playlistData = { ...playlistData, ...data };
-          preencherCampos();
-        }
-      } catch (e) {
-        console.log("A usar dados padrão.");
-      }
-    };
-
-    function preencherCampos() {
-      document.getElementById("inp-duration").value = playlistData.duration || 10;
-      document.getElementById("inp-ticker").value = playlistData.ticker || "";
-      document.getElementById("inp-qrlink").value = playlistData.qrLink || "";
-      document.getElementById("inp-qrtitle").value = playlistData.qrTitle || "";
-      renderizarListaMidias();
+    header {
+      background: var(--card-bg); padding: 15px 20px; border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); margin-bottom: 20px;
+      border: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; position: relative; gap: 12px;
     }
 
-    function renderizarListaMidias() {
-      const container = document.getElementById("lista-midias");
-      container.innerHTML = "";
+    .btn-novo-item {
+      background: var(--primary); color: white; border: none; padding: 10px 18px;
+      border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-novo-item:hover { background: var(--primary-hover); }
 
-      if (!playlistData.urls || playlistData.urls.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500 italic">Nenhuma mídia cadastrada.</p>`;
-        return;
-      }
+    .btn-engrenagem-topo {
+      background: #334155; color: #cbd5e1; border: 1px solid var(--border);
+      width: 42px; height: 42px; border-radius: 8px; cursor: pointer; font-size: 18px;
+      display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-engrenagem-topo:hover { background: #475569; color: white; }
 
-      playlistData.urls.forEach((url, index) => {
-        const item = document.createElement("div");
-        item.className = "flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 gap-2";
-        item.innerHTML = `
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs font-bold text-emerald-400">#${index + 1}</span>
-            <span class="text-xs text-slate-300 truncate max-w-[280px] font-mono">${url}</span>
-          </div>
-          <button onclick="excluirMidia(${index})" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0">
-            <i class="fa-solid fa-trash"></i> Excluir
-          </button>
+    .dropdown-menu {
+      position: absolute; top: 70px; right: 20px; background: var(--card-bg);
+      border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      width: 220px; display: none; flex-direction: column; z-index: 1000; overflow: hidden;
+    }
+    .dropdown-menu a, .dropdown-menu button {
+      background: none; border: none; color: var(--text); padding: 12px 15px; text-align: left;
+      font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px;
+      text-decoration: none; width: 100%; transition: background 0.2s;
+    }
+    .dropdown-menu a:hover, .dropdown-menu button:hover { background: #334155; color: white; }
+    .dropdown-menu hr { border: 0; border-top: 1px solid var(--border); margin: 0; }
+    .dropdown-menu .sair-menu { color: #f87171; }
+    .dropdown-menu .sair-menu:hover { background: #7f1d1d; color: white; }
+
+    .btn-copiar-pix { background: #16a34a; color: white; border: none; padding: 11px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; text-align: center; }
+    .btn-copiar-pix:hover { background: #15803d; }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.85);
+      display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px;
+    }
+    .modal-content {
+      background: var(--card-bg); width: 100%; max-width: 550px; padding: 25px; border-radius: 12px;
+      border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .modal-header h3 { color: #60a5fa; font-size: 18px; }
+    .btn-fechar-modal { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; width: auto; padding: 0; }
+
+    .link-compartilhar {
+      margin-top: 15px; padding: 12px; background: #0f172a; border-radius: 6px;
+      border: 1px dashed #60a5fa; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .link-compartilhar span { font-size: 12px; color: #cbd5e1; word-break: break-all; }
+    .btn-copy { background: #16a34a; width: auto; padding: 6px 12px; font-size: 12px; border: none; color: white; border-radius: 4px; cursor: pointer; }
+
+    .card { background: var(--card-bg); padding: 16px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); border: 1px solid var(--border); }
+    .card h3 { font-size: 15px; margin-bottom: 12px; color: #60a5fa; }
+    
+    .form-group { margin-bottom: 10px; }
+    label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 3px; color: var(--text-muted); }
+    input, textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; color: var(--text); outline: none; }
+    input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+    textarea { resize: vertical; height: 70px; }
+    
+    button { width: 100%; padding: 11px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; color: white; }
+    .btn-primary { background: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-danger { background: var(--danger); padding: 8px 12px; font-size: 12px; }
+    .btn-edit { background: #0284c7; padding: 5px 8px; font-size: 11px; }
+
+    .lista-produtos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .produto-item {
+      background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
+    }
+    .produto-topo { display: flex; align-items: center; gap: 8px; }
+    .produto-topo img { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; background: #334155; }
+    .produto-info h4 { font-size: 13px; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .produto-info p { font-size: 12px; color: #60a5fa; font-weight: 600; }
+    .acoes { display: flex; gap: 5px; width: 100%; }
+    .acoes button { flex: 1; padding: 5px; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #modalRelatorio, #modalRelatorio * { visibility: visible; }
+      #modalRelatorio { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; }
+      .btn-fechar-modal, .btn-primary, .btn-danger { display: none !important; }
+    }
+    
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #334155; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; display: none; z-index: 3000; border: 1px solid var(--border); }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- TELA DE LOGIN / CADASTRO -->
+  <div id="telaLogin">
+    <h2>🔐 Acesso ao Painel</h2>
+    <div class="auth-group">
+      <label>Seu E-mail (Gmail) *</label>
+      <input type="email" id="loginEmail" placeholder="seuemail@gmail.com">
+    </div>
+    <div class="auth-group">
+      <label>Senha de Acesso *</label>
+      <input type="password" id="loginSenha" placeholder="Sua senha secreta">
+    </div>
+    <div class="auth-group">
+      <label>WhatsApp (com DDD) *</label>
+      <input type="text" id="loginWhatsapp" placeholder="Ex: 5564999999999">
+    </div>
+    <button class="btn-auth" onclick="fazerLoginOuCadastro()">Entrar / Criar Conta</button>
+    <span class="link-esqueci" onclick="esqueciSenhaEmail()">Esqueci minha senha (Enviar link por E-mail)</span>
+  </div>
+
+  <!-- PAINEL PRINCIPAL -->
+  <div class="container" id="painelAdmin">
+    
+    <header>
+      <button class="btn-novo-item" onclick="abrirModalProduto()">+ Novo Produto ou Serviço</button>
+      <button class="btn-engrenagem-topo" onclick="toggleMenuDropdown(event)" title="Configurações e Menu">⚙️</button>
+      
+      <div class="dropdown-menu" id="menuDropdown">
+        <a href="#" id="btnVerLoja" target="_blank" style="display: none;">👁️ Ver Catálogo</a>
+        <button onclick="abrirRelatorioVendas()">📊 Relatório de Vendas</button>
+        <button onclick="abrirModalQrCode()">📱 Pix / QR Mensalidade</button>
+        <button onclick="abrirConfiguracoes()">⚙️ Ajustes da Empresa</button>
+        <hr>
+        <button class="sair-menu" onclick="sairPainel()">🚪 Sair</button>
+      </div>
+    </header>
+
+    <!-- MODAL DO QR CODE -->
+    <div class="modal-overlay" id="modalQrCodeGrande">
+      <div class="modal-content" style="text-align: center;">
+        <div class="modal-header">
+          <h3>📱 Pix / QR Mensalidade</h3>
+          <button class="btn-fechar-modal" onclick="fecharModalQrCode()">&times;</button>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Escaneie o QR Code abaixo com o app do seu banco ou copie a chave Pix:</p>
+        <img src="https://i.postimg.cc/hjYNs2q8/Code-Generated-Image.png" alt="QR Code Pix" style="width: 190px; height: 190px; background: white; padding: 6px; border-radius: 8px; margin-bottom: 15px; object-fit: contain;" crossorigin="anonymous">
+        <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 15px; text-align: left;">
+          <strong style="font-size: 13px; display: block; color: #60a5fa; margin-bottom: 2px;">José Clécio dos Santos Gomes</strong>
+          <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Chave Pix (E-mail):</span>
+          <code style="font-size: 14px; color: white; word-break: break-all;" id="chavePixPlataformaTexto">cleciodeanjo67@gmail.com</code>
+        </div>
+        <button class="btn-copiar-pix" onclick="copiarChavePlataforma()" style="margin-bottom: 10px;">📋 Copiar E-mail Pix</button>
+        <a id="btnEnviarComprovantePix" href="#" target="_blank" style="display: block; background: #16a34a; color: white; padding: 11px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; text-align: center;">
+          📲 Enviar Comprovante no WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <!-- MODAL DE RELATÓRIO DE VENDAS -->
+    <div class="modal-overlay" id="modalRelatorio">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>📊 Relatório de Vendas e Faturamento</h3>
+          <button class="btn-fechar-modal" onclick="fecharRelatorioVendas()">&times;</button>
+        </div>
+        <div id="conteudoRelatorio" style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+          Carregando relatório...
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn-primary" onclick="window.print()" style="flex: 1;">🖨️ Imprimir / Salvar PDF</button>
+          <button class="btn-danger" onclick="apagarHistoricoVendas()" style="flex: 1;">🗑️ Apagar Histórico</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURAÇÕES -->
+    <div class="modal-overlay" id="modalConfig">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>🏢 Dados da Empresa & Configurações</h3>
+          <button class="btn-fechar-modal" onclick="fecharConfiguracoes()">&times;</button>
+        </div>
+
+        <div class="form-group"><label>Nome da Empresa</label><input type="text" id="nomeEmpresaInput" placeholder="Ex: Oficina do Clécio"></div>
+        <div class="form-group"><label>Cidade</label><input type="text" id="cidadeInput" placeholder="Ex: Vicentinópolis"></div>
+        <div class="form-group"><label>Rua / Logradouro</label><input type="text" id="ruaInput" placeholder="Ex: Rua Principal"></div>
+        <div class="form-group"><label>Estado (UF)</label><input type="text" id="estadoInput" placeholder="Ex: GO"></div>
+        <div class="form-group">
+          <label><strong>Chave Pix do Vendedor (Para receber dos clientes) *</strong></label>
+          <input type="text" id="pixVendedorInput" placeholder="Ex: CPF, CNPJ, E-mail, Celular ou Chave">
+        </div>
+        
+        <div class="form-group">
+          <label><strong>Foto de Fundo do Topo (Capa do Catálogo)</strong></label>
+          <input type="file" id="inputArquivoCapa" accept="image/*" onchange="converterCapaParaBase64(event)" style="padding: 6px;">
+          <span id="statusCapa" style="font-size: 11px; color: #34d399; display: block; margin-top: 4px;">Nenhuma nova foto selecionada</span>
+          <input type="hidden" id="capaBase64Input">
+        </div>
+
+        <div class="form-group"><label>E-mail Cadastrado</label><input type="text" id="emailInputPerfil" disabled style="opacity: 0.7; cursor: not-allowed;"></div>
+        <div class="form-group"><label>WhatsApp - <b>ID Principal</b></label><input type="text" id="whatsappInput" disabled style="opacity: 0.7; cursor: not-allowed;"></div>
+        
+        <button class="btn-primary" onclick="salvarConfiguracoes()" style="margin-top: 10px;">Salvar Alterações</button>
+
+        <div class="link-compartilhar" id="blocoLinkCliente" style="margin-top: 20px; opacity: 0.5;">
+          <span><strong>Link Exclusivo para seus Clientes:</strong> <br><span id="urlClienteTexto">Salve os dados para gerar o link</span></span>
+          <button class="btn-copy" id="btnCopiarLink" onclick="copiarLinkCliente()" disabled style="background: #64748b; cursor: not-allowed;">📋 Copiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE PRODUTOS -->
+    <div class="modal-overlay" id="modalProduto">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="formTitle">➕ Novo Produto ou Serviço</h3>
+          <button class="btn-fechar-modal" onclick="fecharModalProduto()">&times;</button>
+        </div>
+        
+        <input type="hidden" id="prodId">
+        <input type="hidden" id="fotoBase64">
+        
+        <div class="form-group"><label>Nome do Item</label><input type="text" id="nomeInput" placeholder="Ex: Manutenção ou Gás P13"></div>
+        <div class="form-group"><label>Preço (R$)</label><input type="number" step="0.01" id="precoInput" placeholder="0.00"></div>
+        <div class="form-group"><label>Descrição Curta</label><textarea id="descInput" placeholder="Detalhes do produto ou serviço..."></textarea></div>
+        <div class="form-group"><label>Foto do Produto</label><input type="file" id="inputArquivoFoto" accept="image/*" onchange="converterImagemParaBase64(event)" style="padding: 6px;"></div>
+        
+        <button class="btn-primary" id="btnSalvar" onclick="salvarProduto()" style="margin-top: 10px;">Cadastrar Produto</button>
+      </div>
+    </div>
+
+    <div class="grid-admin">
+      <div class="card">
+        <h3>📦 Catálogo Online Sincronizado</h3>
+        <div class="lista-produtos" id="listaProdutos">
+          <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1; padding: 20px;">Carregando...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toastMsg">Ação realizada!</div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyByAZJBRCGJ4s6-9HAjf3qgLVOdj_d2Ha4",
+      authDomain: "meu-pedido-delivery-7cd35.firebaseapp.com",
+      databaseURL: "https://meu-pedido-delivery-7cd35-default-rtdb.firebaseio.com",
+      projectId: "meu-pedido-delivery-7cd35",
+      storageBucket: "meu-pedido-delivery-7cd35.firebasestorage.app",
+      messagingSenderId: "328039639416",
+      appId: "1:328039639416:web:510f5d624c09c91857808d",
+      measurementId: "G-47D5F61DQZ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const CHAVE_PIX_PLATAFORMA = "cleciodeanjo67@gmail.com";
+    const WHATSAPP_PLATAFORMA = "5564999999999";
+
+    let lojaId = localStorage.getItem('sessaoLojaAdmin');
+    let unsubLoja = null;
+    let unsubProdutos = null;
+    let totalProdutosCadastrados = 0;
+    let listaProdutosArray = [];
+
+    function mostrarToast(mensagem) {
+      const t = document.getElementById('toastMsg');
+      t.innerText = mensagem;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    function toggleMenuDropdown(event) {
+      event.stopPropagation();
+      const menu = document.getElementById('menuDropdown');
+      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    window.addEventListener('click', () => {
+      const menu = document.getElementById('menuDropdown');
+      if (menu) menu.style.display = 'none';
+    });
+
+    function abrirConfiguracoes() { document.getElementById('modalConfig').style.display = 'flex'; }
+    function fecharConfiguracoes() { document.getElementById('modalConfig').style.display = 'none'; }
+    function abrirModalProduto() { limparFormulario(); document.getElementById('modalProduto').style.display = 'flex'; }
+    function fecharModalProduto() { document.getElementById('modalProduto').style.display = 'none'; }
+    function abrirModalQrCode() { document.getElementById('modalQrCodeGrande').style.display = 'flex'; }
+    function fecharModalQrCode() { document.getElementById('modalQrCodeGrande').style.display = 'none'; }
+
+    async function abrirRelatorioVendas() {
+      document.getElementById('modalRelatorio').style.display = 'flex';
+      const divRel = document.getElementById('conteudoRelatorio');
+      divRel.innerHTML = 'Calculando relatório...';
+      if (!lojaId) return;
+
+      try {
+        const snapshot = await db.collection('lojas').doc(lojaId).collection('pedidos').get();
+        let totalVendidoGeral = 0;
+        let totalPedidos = 0;
+        let itensVendidosMap = {};
+
+        snapshot.forEach(doc => {
+          const pedido = doc.data();
+          totalPedidos++;
+          totalVendidoGeral += (pedido.valorTotal || 0);
+          if (pedido.itens && Array.isArray(pedido.itens)) {
+            pedido.itens.forEach(item => {
+              if (!itensVendidosMap[item.nome]) {
+                itensVendidosMap[item.nome] = { qtd: 0, total: 0 };
+              }
+              itensVendidosMap[item.nome].qtd += item.qtd;
+              itensVendidosMap[item.nome].total += (item.preco * item.qtd);
+            });
+          }
+        });
+
+        let itensHtml = '';
+        for (let nome in itensVendidosMap) {
+          let dados = itensVendidosMap[nome];
+          itensHtml += `<tr><td style="padding: 6px; border-bottom: 1px solid var(--border);">${nome}</td><td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: center;">${dados.qtd}x</td><td style="padding: 6px; border-bottom: 1px solid var(--border); text-align: right;">R$ ${dados.total.toFixed(2)}</td></tr>`;
+        }
+
+        divRel.innerHTML = `
+          <p><b>Loja ID:</b> ${lojaId}</p>
+          <p><b>Total de Pedidos:</b> ${totalPedidos}</p>
+          <p style="font-size: 15px; color: #60a5fa; margin-top: 6px;"><b>Soma Total Vendida:</b> R$ ${totalVendidoGeral.toFixed(2)}</p>
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 12px 0;">
+          <p><b>Detalhamento de Itens:</b></p>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+            <thead>
+              <tr style="background: #0f172a; color: #60a5fa; font-size: 12px;">
+                <th style="padding: 6px; text-align: left;">Item</th>
+                <th style="padding: 6px; text-align: center;">Qtd</th>
+                <th style="padding: 6px; text-align: right;">Total (R$)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itensHtml || '<tr><td colspan="3" style="text-align: center; padding: 10px; color: var(--text-muted);">Nenhuma venda registrada.</td></tr>'}
+            </tbody>
+          </table>
         `;
-        container.appendChild(item);
+      } catch (e) {
+        divRel.innerHTML = `<p style="color: #f87171;">Erro: ${e.message}</p>`;
+      }
+    }
+
+    async function apagarHistoricoVendas() {
+      if (!confirm('Deseja apagar todo o histórico de vendas?')) return;
+      try {
+        const ref = db.collection('lojas').doc(lojaId).collection('pedidos');
+        const snapshot = await ref.get();
+        let batch = db.batch();
+        snapshot.forEach(doc => { batch.delete(doc.ref); });
+        await batch.commit();
+        mostrarToast('🗑️ Histórico apagado!');
+        abrirRelatorioVendas();
+      } catch (e) {
+        alert('Erro: ' + e.message);
+      }
+    }
+
+    function fecharRelatorioVendas() { document.getElementById('modalRelatorio').style.display = 'none'; }
+    function copiarChavePlataforma() { navigator.clipboard.writeText(CHAVE_PIX_PLATAFORMA).then(() => mostrarToast('📋 Pix copiado!')); }
+
+    async function fazerLoginOuCadastro() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const senha = document.getElementById('loginSenha').value.trim();
+      const whatsapp = document.getElementById('loginWhatsapp').value.replace(/\D/g, '');
+
+      if (!email || !senha || !whatsapp) { alert('Preencha todos os campos!'); return; }
+
+      try {
+        await auth.signInWithEmailAndPassword(email, senha);
+        iniciarPainel(whatsapp);
+      } catch (erroLogin) {
+        try {
+          await auth.createUserWithEmailAndPassword(email, senha);
+          await db.collection('lojas').doc(whatsapp).set({
+            email, whatsapp, nomeEmpresa: 'Minha Empresa',
+            cidade: '', rua: '', estado: '', pixVendedor: '', capaUrl: '', criadoEm: new Date()
+          });
+          iniciarPainel(whatsapp);
+          abrirConfiguracoes();
+          mostrarToast('🚀 Conta criada! Preencha os dados.');
+        } catch (erroCadastro) {
+          alert('Erro: ' + erroCadastro.message);
+        }
+      }
+    }
+
+    async function esqueciSenhaEmail() {
+      const email = document.getElementById('loginEmail').value.trim();
+      if (!email) { alert('Digite seu e-mail!'); return; }
+      try {
+        await auth.sendPasswordResetEmail(email);
+        alert('📧 E-mail de recuperação enviado!');
+      } catch (err) { alert('Erro: ' + err.message); }
+    }
+
+    function iniciarPainel(codigo) {
+      lojaId = codigo;
+      localStorage.setItem('sessaoLojaAdmin', lojaId);
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('painelAdmin').style.display = 'block';
+      document.getElementById('whatsappInput').value = lojaId;
+      document.getElementById('btnEnviarComprovantePix').href = `https://wa.me/${WHATSAPP_PLATAFORMA}?text=${encodeURIComponent('Comprovante Loja ID: ' + lojaId)}`;
+      carregarDadosLoja(lojaId);
+    }
+
+    function sairPainel() {
+      auth.signOut();
+      localStorage.removeItem('sessaoLojaAdmin');
+      window.location.reload();
+    }
+
+    function carregarDadosLoja(codigo) {
+      if (unsubLoja) unsubLoja();
+      if (unsubProdutos) unsubProdutos();
+
+      unsubLoja = db.collection('lojas').doc(codigo).onSnapshot(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById('nomeEmpresaInput').value = data.nomeEmpresa || '';
+          document.getElementById('cidadeInput').value = data.cidade || '';
+          document.getElementById('ruaInput').value = data.rua || '';
+          document.getElementById('estadoInput').value = data.estado || '';
+          document.getElementById('pixVendedorInput').value = data.pixVendedor || '';
+          document.getElementById('emailInputPerfil').value = data.email || '';
+          
+          if (data.capaUrl) {
+            document.getElementById('capaBase64Input').value = data.capaUrl;
+            document.getElementById('statusCapa').innerText = '✅ Foto de capa salva e ativa no sistema!';
+          } else {
+            document.getElementById('statusCapa').innerText = 'Nenhuma foto de capa salva atualmente.';
+          }
+
+          if (data.nomeEmpresa && data.nomeEmpresa !== 'Minha Empresa') liberarLinkCliente(codigo);
+        }
+      });
+
+      unsubProdutos = db.collection('lojas').doc(codigo).collection('produtos').onSnapshot(snapshot => {
+        let html = '';
+        totalProdutosCadastrados = 0;
+        listaProdutosArray = [];
+        snapshot.forEach(doc => {
+          totalProdutosCadastrados++;
+          const p = doc.data();
+          listaProdutosArray.push(p);
+          const nomeEscapado = (p.nome || '').replace(/'/g, "\\'");
+          const descEscapada = (p.descricao || '').replace(/'/g, "\\'");
+          html += `
+            <div class="produto-item">
+              <div class="produto-topo">
+                <img src="${p.fotoUrl || 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500'}" alt="Foto" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500'">
+                <div class="produto-info">
+                  <h4>${p.nome}</h4>
+                  <p>R$ ${p.preco.toFixed(2)}</p>
+                </div>
+              </div>
+              <div class="acoes">
+                <button class="btn-edit" onclick="editarProduto('${doc.id}', '${nomeEscapado}', ${p.preco}, '${descEscapada}', '${p.fotoUrl || ''}')">Editar</button>
+                <button class="btn-danger" onclick="excluirProduto('${doc.id}')">Excluir</button>
+              </div>
+            </div>
+          `;
+        });
+        document.getElementById('listaProdutos').innerHTML = html || '<p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1; padding: 20px;">Nenhum produto cadastrado.</p>';
       });
     }
 
-    function excluirMidia(index) {
-      playlistData.urls.splice(index, 1);
-      renderizarListaMidias();
+    function liberarLinkCliente(codigo) {
+      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+      const linkCliente = `${baseUrl}/index.html?loja=${codigo}`;
+      document.getElementById('urlClienteTexto').innerText = linkCliente;
+      const btnVer = document.getElementById('btnVerLoja');
+      btnVer.href = linkCliente;
+      btnVer.style.display = 'flex';
+      const bloco = document.getElementById('blocoLinkCliente');
+      bloco.style.opacity = '1';
+      const btnC = document.getElementById('btnCopiarLink');
+      btnC.disabled = false; btnC.style.background = '#16a34a'; btnC.style.cursor = 'pointer';
     }
 
-    function adicionarMidia() {
-      const input = document.getElementById("nova-url");
-      const url = input.value.trim();
-      if (!url) return;
-      if (!playlistData.urls) playlistData.urls = [];
-      playlistData.urls.push(url);
-      input.value = "";
-      renderizarListaMidias();
-    }
-
-    function importarJson(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    // Função otimizada para comprimir e garantir a conversão perfeita da capa
+    function converterCapaParaBase64(event) {
+      const arquivo = event.target.files[0];
+      if (!arquivo) return;
+      
       const reader = new FileReader();
       reader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          playlistData = { ...playlistData, ...parsed };
-          preencherCampos();
-          document.getElementById("status-msg.innerHTML = `<span class='text-emerald-400'>JSON importado com sucesso!</span>`";
-        } catch (err) {
-          alert("Erro ao ler o ficheiro JSON.");
-        }
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Redimensiona o banner/capa para otimizar espaço mantendo a qualidade
+          let width = img.width;
+          let height = img.height;
+          const maxDimension = 900;
+          
+          if (width > height && width > maxDimension) {
+            height *= maxDimension / width;
+            width = maxDimension;
+          } else if (height > maxDimension) {
+            width *= maxDimension / height;
+            height = maxDimension;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          document.getElementById('capaBase64Input').value = dataUrl;
+          document.getElementById('statusCapa').innerText = '✅ Foto de capa processada com sucesso! Clique em "Salvar Alterações".';
+        };
       };
-      reader.readAsText(file);
+      reader.readAsDataURL(arquivo);
     }
 
-    function gerarEBaixarJson() {
-      // Atualiza os valores com base nos inputs do painel
-      playlistData.duration = parseInt(document.getElementById("inp-duration").value) || 10;
-      playlistData.ticker = document.getElementById("inp-ticker").value.trim();
-      playlistData.qrLink = document.getElementById("inp-qrlink").value.trim();
-      playlistData.qrTitle = document.getElementById("inp-qrtitle").value.trim();
+    function converterImagemParaBase64(event) {
+      const arquivo = event.target.files[0];
+      if (!arquivo) return;
+      const reader = new FileReader();
+      reader.onload = function(e) { document.getElementById('fotoBase64').value = e.target.result; };
+      reader.readAsDataURL(arquivo);
+    }
 
-      // Converte para JSON formatado (bonito)
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(playlistData, null, 2));
+    function salvarConfiguracoes() {
+      const nomeEmpresa = document.getElementById('nomeEmpresaInput').value.trim();
+      const cidade = document.getElementById('cidadeInput').value.trim();
+      const rua = document.getElementById('ruaInput').value.trim();
+      const estado = document.getElementById('estadoInput').value.trim();
+      const pixVendedor = document.getElementById('pixVendedorInput').value.trim();
+      const capaUrl = document.getElementById('capaBase64Input').value.trim();
       
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "playlist.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+      if (!nomeEmpresa) { alert('Informe o nome da empresa!'); return; }
 
-      document.getElementById("status-msg").innerHTML = `<span class='text-emerald-400 font-bold'>✅ Ficheiro playlist.json gerado e baixado com sucesso! Basta enviá-lo para o GitHub.</span>`;
+      let dadosAtualizacao = { nomeEmpresa, cidade, rua, estado, pixVendedor, capaUrl, atualizadoEm: new Date() };
+
+      db.collection('lojas').doc(lojaId).set(dadosAtualizacao, { merge: true })
+        .then(() => {
+          liberarLinkCliente(lojaId);
+          fecharConfiguracoes();
+          mostrarToast('✅ Configurações e Capa salvas na base de dados com sucesso!');
+        })
+        .catch(err => {
+          alert('Erro ao salvar no banco: ' + err.message);
+        });
+    }
+
+    function salvarProduto() {
+      const id = document.getElementById('prodId').value;
+      const nome = document.getElementById('nomeInput').value;
+      const preco = parseFloat(document.getElementById('precoInput').value) || 0;
+      const descricao = document.getElementById('descInput').value;
+      let fotoUrl = document.getElementById('fotoBase64').value;
+      if (!nome || !preco) { alert('Preencha Nome e Preço!'); return; }
+      if (!id && !fotoUrl) fotoUrl = 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500';
+
+      const dados = { nome, preco, descricao, atualizadoEm: new Date() };
+      if (fotoUrl) dados.fotoUrl = fotoUrl;
+
+      if (id) {
+        db.collection('lojas').doc(lojaId).collection('produtos').doc(id).update(dados)
+          .then(() => { fecharModalProduto(); limparFormulario(); mostrarToast('✏️ Produto atualizado!'); });
+      } else {
+        dados.criadoEm = new Date();
+        db.collection('lojas').doc(lojaId).collection('produtos').add(dados)
+          .then(() => { fecharModalProduto(); limparFormulario(); mostrarToast('🚀 Produto cadastrado!'); });
+      }
+    }
+
+    function limparFormulario() {
+      document.getElementById('prodId').value = '';
+      document.getElementById('nomeInput').value = '';
+      document.getElementById('precoInput').value = '';
+      document.getElementById('descInput').value = '';
+      document.getElementById('fotoBase64').value = '';
+      document.getElementById('inputArquivoFoto').value = '';
+      document.getElementById('formTitle').innerText = '➕ Novo Produto ou Serviço';
+      document.getElementById('btnSalvar').innerText = 'Cadastrar Produto';
+    }
+
+    function editarProduto(id, nome, preco, desc, foto) {
+      document.getElementById('prodId').value = id;
+      document.getElementById('nomeInput').value = nome;
+      document.getElementById('precoInput').value = preco;
+      document.getElementById('descInput').value = desc;
+      document.getElementById('fotoBase64').value = foto;
+      document.getElementById('formTitle').innerText = '✏️ Editando Produto';
+      document.getElementById('btnSalvar').innerText = 'Salvar Alterações';
+      document.getElementById('modalProduto').style.display = 'flex';
+    }
+
+    function excluirProduto(id) {
+      if (confirm('Deseja remover este produto?')) {
+        db.collection('lojas').doc(lojaId).collection('produtos').doc(id).delete()
+          .then(() => mostrarToast('🗑️ Removido!'));
+      }
+    }
+
+    function copiarLinkCliente() {
+      navigator.clipboard.writeText(document.getElementById('urlClienteTexto').innerText).then(() => mostrarToast('📋 Link copiado!'));
+    }
+
+    if (lojaId) {
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('painelAdmin').style.display = 'block';
+      document.getElementById('whatsappInput').value = lojaId;
+      carregarDadosLoja(lojaId);
     }
   </script>
 </body>
