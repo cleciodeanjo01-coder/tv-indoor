@@ -3,252 +3,462 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mídia Indoor - Player Premium</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <title>Catálogo Online - Produtos e Serviços</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.4);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(51, 65, 85, 0.6);
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+    body { background-color: var(--bg); color: var(--text); padding: 15px; padding-bottom: 90px; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* CABEÇALHO DA LOJA COM SUPORTE ROBUSTO A FOTO DE FUNDO */
+    .loja-header {
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.8), rgba(37, 99, 235, 0.8));
+      background-size: cover !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      position: relative;
+      overflow: hidden;
+      padding: 30px 20px; border-radius: 12px; text-align: center; margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); border: 1px solid var(--border);
+    }
+    .loja-header::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.68);
+      z-index: 1;
+    }
+    .loja-header > * { position: relative; z-index: 2; }
+
+    .loja-header h1 { font-size: 22px; color: white; margin-bottom: 4px; }
+    .loja-header p { font-size: 13px; color: #93c5fd; }
+
+    h2 { font-size: 16px; color: #60a5fa; margin-bottom: 12px; }
+
+    /* GRADE DE PRODUTOS COMPACTA */
+    .lista-produtos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 25px;
+    }
     
-    * { user-select: none; box-sizing: border-box; }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Montserrat', sans-serif; }
-
-    .bg-blur-layer {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      object-fit: cover; filter: blur(25px) brightness(0.4); transform: scale(1.1);
-      transition: opacity 0.3s ease-in-out; z-index: 1;
+    .produto-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(6px);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      justify-content: space-between; gap: 8px; text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
 
-    .media-layer {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      object-fit: contain; opacity: 0; transition: opacity 0.3s ease-in-out; z-index: 2;
-    }
-    .media-layer.active { opacity: 1; }
-
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+    .produto-card img {
+      width: 96px;
+      height: 96px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #334155;
+      margin: 0 auto;
+      display: block;
     }
 
-    @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-    .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; }
+    .produto-info h3 { font-size: 13px; color: var(--text); margin-bottom: 2px; }
+    .produto-info p { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .produto-preco { font-size: 13px; color: #60a5fa; font-weight: bold; }
+
+    .qtd-controle {
+      display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+    }
+    .btn-qtd {
+      background: var(--primary); color: white; border: none; width: 28px; height: 28px;
+      border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-qtd:hover { background: var(--primary-hover); }
+    .qtd-numero { font-size: 13px; font-weight: bold; color: white; min-width: 20px; text-align: center; }
+
+    .barra-carrinho {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border); padding: 12px 20px;
+      display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+    }
+    .carrinho-info { font-size: 13px; color: #93c5fd; }
+    .btn-finalizar {
+      background: #16a34a; color: white; border: none; padding: 10px 20px;
+      border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;
+    }
+    .btn-finalizar:hover { background: #15803d; }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(5px);
+      display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px;
+    }
+    .modal-content {
+      background: #1e293b; width: 100%; max-width: 420px; padding: 20px;
+      border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .modal-header h3 { color: #60a5fa; font-size: 16px; }
+    .btn-fechar { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
+
+    .form-group { margin-bottom: 10px; text-align: left; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: var(--text-muted); }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border);
+      border-radius: 5px; font-size: 13px; color: white; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+
+    .btn-gps {
+      background: #0284c7; color: white; border: none; padding: 9px;
+      border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 12px;
+      width: 100%; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-gps:hover { background: #0369a1; }
+
+    .toast {
+      position: fixed; bottom: 70px; right: 20px; background: #334155; color: white;
+      padding: 8px 14px; border-radius: 6px; font-size: 12px; display: none; z-index: 3000;
+      border: 1px solid var(--border);
+    }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="relative w-screen h-screen overflow-hidden bg-black text-white">
+<body>
 
-  <div id="bg-container" class="absolute inset-0 z-1 overflow-hidden"></div>
-  <div id="player-container" class="relative w-full h-full flex items-center justify-center z-2"></div>
+  <div class="container">
+    <!-- CABEÇALHO DINÂMICO DA LOJA -->
+    <div class="loja-header" id="lojaHeader">
+      <h1 id="nomeLojaTitulo">Carregando Loja...</h1>
+      <p id="enderecoLojaSub">Aguarde os dados...</p>
+    </div>
 
-  <div class="absolute top-6 left-6 z-30 pointer-events-none">
-    <div class="glass-panel px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl">
-      <div class="w-7 h-7 bg-orange-600 rounded-lg flex items-center justify-center font-black text-xs text-white shadow-md">HTML</div>
-      <span id="brand-title" class="font-extrabold text-base tracking-wider text-white">MÍDIA INDOOR</span>
+    <h2>📦 Catálogo de Produtos e Serviços</h2>
+    <div class="lista-produtos" id="catalogoProdutos">
+      <p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">Carregando produtos...</p>
     </div>
   </div>
 
-  <div class="absolute top-6 right-6 z-30 pointer-events-none flex items-center gap-4">
-    <div class="glass-panel px-6 py-3 rounded-2xl flex items-center gap-6 shadow-2xl">
-      <div class="flex items-center gap-3 pr-4 border-r border-slate-700/60">
-        <i class="fa-solid fa-sun text-yellow-400 text-2xl"></i>
-        <div class="flex flex-col">
-          <span id="weather-temp" class="text-lg font-black leading-none text-white">26°C</span>
-          <span class="text-[10px] text-slate-300 font-bold tracking-widest uppercase mt-0.5">VICENTINÓPOLIS</span>
-        </div>
+  <!-- BARRA FLUTUANTE DE FINALIZAR PEDIDO -->
+  <div class="barra-carrinho" id="barraCarrinho" style="display: none;">
+    <div class="carrinho-info" id="carrinhoInfo">0 itens selecionados</div>
+    <button class="btn-finalizar" onclick="abrirModalCadastro()">Finalizar Pedido</button>
+  </div>
+
+  <!-- MODAL DE CADASTRO DO CLIENTE -->
+  <div class="modal-overlay" id="modalCadastro">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📝 Seus Dados para Entrega</h3>
+        <button class="btn-fechar" onclick="fecharModalCadastro()">&times;</button>
       </div>
-      <div class="flex flex-col text-right">
-        <span id="clock-time" class="text-2xl font-black tracking-widest text-emerald-400 leading-none">00:00:00</span>
-        <span id="clock-date" class="text-[10px] text-slate-300 font-medium tracking-wide mt-1">--/--/----</span>
+
+      <button class="btn-gps" onclick="obterLocalizacaoGPS()">📍 Preencher Endereço com GPS Atual</button>
+
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" id="clienteNome" placeholder="Seu nome completo">
       </div>
+      <div class="form-group">
+        <label>Cidade *</label>
+        <input type="text" id="clienteCidade" placeholder="Sua cidade">
+      </div>
+      <div class="form-group">
+        <label>Rua *</label>
+        <input type="text" id="clienteRua" placeholder="Nome da rua / número">
+      </div>
+      <div class="form-group">
+        <label>Bairro *</label>
+        <input type="text" id="clienteBairro" placeholder="Seu bairro">
+      </div>
+      <div class="form-group">
+        <label>Estado (UF) *</label>
+        <input type="text" id="clienteEstado" placeholder="Ex: GO">
+      </div>
+
+      <div class="form-group">
+        <label>Forma de Pagamento *</label>
+        <select id="formaPagamento" onchange="verificarPagamentoDinheiro()">
+          <option value="Pix">Pix</option>
+          <option value="Cartão">Cartão</option>
+          <option value="Dinheiro">Dinheiro</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="blocoTroco" style="display: none;">
+        <label>Troco para quanto? (Opcional)</label>
+        <input type="text" id="clienteTroco" placeholder="Ex: Levar troco para R$ 50,00">
+      </div>
+
+      <div class="form-group">
+        <label>Observação (Opcional)</label>
+        <textarea id="clienteObs" placeholder="Ex: Ponto de referência..."></textarea>
+      </div>
+
+      <input type="hidden" id="gpsLinkMaps" value="">
+
+      <button class="btn-finalizar" style="width: 100%; margin-top: 5px;" onclick="enviarPedidoWhatsApp()">📲 Enviar Pedido no WhatsApp</button>
     </div>
   </div>
 
-  <div id="qr-box" class="absolute bottom-16 right-6 z-40 glass-panel p-4 rounded-3xl shadow-2xl flex flex-col items-center gap-2 border border-emerald-500/20 max-w-[180px]">
-    <div id="qrcode" class="bg-white p-2 rounded-2xl shadow-inner"></div>
-    <span id="qr-label" class="text-xs font-black uppercase tracking-wider text-white text-center mt-1">ACESSE NOSSO SITE</span>
-    <span class="text-[9px] text-slate-300 text-center leading-tight">Aponte a câmera do seu celular</span>
-  </div>
-
-  <div class="absolute bottom-0 left-0 w-full z-30 glass-panel border-t border-slate-800 py-2.5 overflow-hidden">
-    <div class="flex items-center">
-      <div class="bg-emerald-500 text-slate-950 font-black text-xs px-4 py-1 rounded-r-full uppercase tracking-wider z-10 shrink-0 shadow-lg flex items-center gap-2 ml-4">
-        <i class="fa-solid fa-bullhorn"></i>
-        <span>AVISOS</span>
-      </div>
-      <div class="overflow-hidden w-full relative flex items-center">
-        <div id="ticker-text" class="animate-marquee font-bold text-sm tracking-wide text-slate-100 pl-8">
-          Seja bem-vindo! Acompanhe nossas novidades e ofertas na tela.
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="toast" id="toastMsg">Ação realizada!</div>
 
   <script>
-    const GITHUB_USER = "cleciodeanjo01-coder";
-    const GITHUB_REPO = "tv-indoor"; 
-    const JSON_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/playlist.json`;
+    const firebaseConfig = {
+      apiKey: "AIzaSyByAZJBRCGJ4s6-9HAjf3qgLVOdj_d2Ha4",
+      authDomain: "meu-pedido-delivery-7cd35.firebaseapp.com",
+      databaseURL: "https://meu-pedido-delivery-7cd35-default-rtdb.firebaseio.com",
+      projectId: "meu-pedido-delivery-7cd35",
+      storageBucket: "meu-pedido-delivery-7cd35.firebasestorage.app",
+      messagingSenderId: "328039639416",
+      appId: "1:328039639416:web:510f5d624c09c91857808d",
+      measurementId: "G-47D5F61DQZ"
+    };
 
-    let playlist = [];
-    let currentIndex = 0;
-    let timer = null;
-    let imageDuration = 10;
-    let lastJsonRaw = "";
-    let currentQrLink = "";
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    function setupClock() {
-      function update() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        document.getElementById("clock-time").innerText = `${hours}:${minutes}:${seconds}`;
+    const urlParams = new URLSearchParams(window.location.search);
+    let lojaId = urlParams.get('loja');
 
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        document.getElementById("clock-date").innerText = `${day}/${month}/${year}`;
-      }
-      setInterval(update, 1000);
-      update();
+    if (!lojaId) {
+      lojaId = localStorage.getItem('sessaoLojaAdmin');
     }
 
-    async function fetchPlaylist() {
-      try {
-        const cacheBuster = `${new Date().getTime()}_${Math.random()}`;
-        const response = await fetch(`${JSON_URL}?t=${cacheBuster}`, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
+    let whatsappVendedor = "";
+    let carrinho = {};
+
+    function mostrarToast(msg) {
+      const t = document.getElementById('toastMsg');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2500);
+    }
+
+    if (!lojaId) {
+      document.getElementById('lojaHeader').innerHTML = "<h1>⚠️ Loja não encontrada</h1><p>Abra o catálogo através do link gerado no seu painel administrativo.</p>";
+    } else {
+      carregarDadosLojaCliente(lojaId);
+    }
+
+    function carregarDadosLojaCliente(id) {
+      db.collection('lojas').doc(id).get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          whatsappVendedor = data.whatsapp || id;
+          
+          document.getElementById('nomeLojaTitulo').innerText = data.nomeEmpresa || 'Minha Loja';
+          document.getElementById('enderecoLojaSub').innerText = `${data.cidade || ''} - ${data.estado || ''} (${data.rua || ''})`;
+          
+          // Aplica a foto de capa no plano de fundo do cabeçalho com segurança
+          if (data.capaUrl && data.capaUrl.trim() !== '') {
+            const headerEl = document.getElementById('lojaHeader');
+            headerEl.style.backgroundImage = `url('${data.capaUrl}')`;
           }
-        });
-        
-        if (!response.ok) return;
-
-        const textData = await response.text();
-        if (textData === lastJsonRaw) return; 
-
-        lastJsonRaw = textData;
-        const data = JSON.parse(textData);
-
-        if (data.brand) document.getElementById("brand-title").innerText = data.brand;
-        if (data.ticker) document.getElementById("ticker-text").innerText = data.ticker;
-        if (data.duration) imageDuration = parseInt(data.duration) || 10;
-
-        if (data.urls && Array.isArray(data.urls) && data.urls.length > 0) {
-          playlist = data.urls.map(item => {
-            const mediaUrl = typeof item === "string" ? item : item.url;
-            const isVideo = mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".webm") || mediaUrl.includes("video");
-            
-            return {
-              type: isVideo ? "video" : "image",
-              url: mediaUrl,
-              qrLink: (typeof item === "object" && item.qrLink) ? item.qrLink : (data.qrLink || ""),
-              qrTitle: (typeof item === "object" && item.qrTitle) ? item.qrTitle : (data.qrTitle || "ACESSE NOSSO SITE")
-            };
-          });
-
-          if (!timer) {
-            currentIndex = 0;
-            playNextMedia();
-          }
+        } else {
+          document.getElementById('lojaHeader').innerHTML = "<h1>⚠️ Loja não cadastrada</h1>";
         }
-      } catch (err) {
-        console.error("Erro ao carregar a playlist central:", err);
-      }
+      });
+
+      db.collection('lojas').doc(id).collection('produtos').onSnapshot(snapshot => {
+        let html = '';
+        snapshot.forEach(doc => {
+          const pId = doc.id;
+          const p = doc.data();
+          const nomeProd = p.nome || 'Produto';
+          const precoProd = Number(p.preco || 0);
+          const descProd = p.descricao || '';
+          const fotoProd = p.fotoUrl || 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500';
+          
+          let qtdAtual = carrinho[pId] ? carrinho[pId].qtd : 0;
+
+          html += `
+            <div class="produto-card" id="card-${pId}">
+              <div>
+                <img src="${fotoProd}" alt="${nomeProd}" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500'">
+                <div class="produto-info" style="margin-top: 6px;">
+                  <h3>${nomeProd}</h3>
+                  <p>${descProd}</p>
+                  <div class="produto-preco">R$ ${precoProd.toFixed(2)}</div>
+                </div>
+              </div>
+              <div class="qtd-controle">
+                <button class="btn-qtd" onclick="alterarQtd('${pId}', '${nomeProd}', ${precoProd}, -1)">-</button>
+                <span class="qtd-numero" id="qtd-${pId}">${qtdAtual}</span>
+                <button class="btn-qtd" onclick="alterarQtd('${pId}', '${nomeProd}', ${precoProd}, 1)">+</button>
+              </div>
+            </div>
+          `;
+        });
+        document.getElementById('catalogoProdutos').innerHTML = html || '<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">Nenhum produto cadastrado no momento.</p>';
+        atualizarBarraCarrinho();
+      });
     }
 
-    function playNextMedia() {
-      if (playlist.length === 0) return;
-
-      const container = document.getElementById("player-container");
-      const bgContainer = document.getElementById("bg-container");
-      const currentItem = playlist[currentIndex];
-      
-      const qrBox = document.getElementById("qr-box");
-      if (currentItem.qrLink && currentItem.qrLink.trim() !== "") {
-        qrBox.classList.remove("hidden");
-        document.getElementById("qr-label").innerText = currentItem.qrTitle;
-        
-        if (currentQrLink !== currentItem.qrLink) {
-          currentQrLink = currentItem.qrLink;
-          document.getElementById("qrcode").innerHTML = "";
-          new QRCode(document.getElementById("qrcode"), {
-            text: currentQrLink,
-            width: 110,
-            height: 110,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-          });
+    function alterarQtd(id, nome, preco, delta) {
+      if (!carrinho[id]) {
+        if (delta > 0) {
+          carrinho[id] = { nome, preco, qtd: delta };
         }
       } else {
-        qrBox.classList.add("hidden");
+        carrinho[id].qtd += delta;
+        if (carrinho[id].qtd <= 0) {
+          delete carrinho[id];
+        }
       }
-      
-      const oldMedia = container.querySelectorAll('.media-layer');
-      const oldBg = bgContainer.querySelectorAll('.bg-blur-layer');
 
-      if (currentItem.type === "image") {
-        const bgImg = document.createElement("img");
-        bgImg.src = currentItem.url;
-        bgImg.className = "bg-blur-layer";
-        bgContainer.appendChild(bgImg);
+      const qtdSpan = document.getElementById(`qtd-${id}`);
+      if (qtdSpan) {
+        qtdSpan.innerText = carrinho[id] ? carrinho[id].qtd : 0;
+      }
 
-        const img = document.createElement("img");
-        img.src = currentItem.url;
-        img.className = "media-layer";
-        container.appendChild(img);
+      atualizarBarraCarrinho();
+    }
 
-        setTimeout(() => {
-          img.classList.add("active");
-          oldMedia.forEach(el => el.remove());
-          oldBg.forEach(el => el.remove());
-        }, 10);
+    function atualizarBarraCarrinho() {
+      let totalItens = 0;
+      let valorTotal = 0;
 
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => {
-          currentIndex = (currentIndex + 1) % playlist.length;
-          playNextMedia();
-        }, imageDuration * 1000);
+      for (let id in carrinho) {
+        totalItens += carrinho[id].qtd;
+        valorTotal += carrinho[id].preco * carrinho[id].qtd;
+      }
 
-      } else if (currentItem.type === "video") {
-        const video = document.createElement("video");
-        video.src = currentItem.url;
-        video.className = "media-layer";
-        video.autoplay = true;
-        video.muted = true;
-        video.playsInline = true;
-
-        video.onloadeddata = () => {
-          video.classList.add("active");
-          oldMedia.forEach(el => el.remove());
-          oldBg.forEach(el => el.remove());
-        };
-
-        video.onended = () => {
-          currentIndex = (currentIndex + 1) % playlist.length;
-          playNextMedia();
-        };
-
-        video.onerror = () => {
-          currentIndex = (currentIndex + 1) % playlist.length;
-          playNextMedia();
-        };
-
-        container.appendChild(video);
-        video.play().catch(() => {
-          currentIndex = (currentIndex + 1) % playlist.length;
-          playNextMedia();
-        });
+      const barra = document.getElementById('barraCarrinho');
+      if (totalItens > 0) {
+        barra.style.display = 'flex';
+        document.getElementById('carrinhoInfo').innerText = `${totalItens} itens | Total: R$ ${valorTotal.toFixed(2)}`;
+      } else {
+        barra.style.display = 'none';
       }
     }
 
-    setupClock();
-    fetchPlaylist();
-    setInterval(fetchPlaylist, 5000);
+    function abrirModalCadastro() {
+      document.getElementById('modalCadastro').style.display = 'flex';
+    }
+
+    function fecharModalCadastro() {
+      document.getElementById('modalCadastro').style.display = 'none';
+    }
+
+    function verificarPagamentoDinheiro() {
+      const forma = document.getElementById('formaPagamento').value;
+      const blocoTroco = document.getElementById('blocoTroco');
+      if (forma === 'Dinheiro') {
+        blocoTroco.style.display = 'block';
+      } else {
+        blocoTroco.style.display = 'none';
+        document.getElementById('clienteTroco').value = '';
+      }
+    }
+
+    function obterLocalizacaoGPS() {
+      if (!navigator.geolocation) {
+        alert('Seu navegador não suporta geolocalização.');
+        return;
+      }
+      mostrarToast('📍 Obtendo localização GPS...');
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const linkMaps = `https://www.google.com/maps?q=${lat},${lon}`;
+        
+        document.getElementById('gpsLinkMaps').value = linkMaps;
+        document.getElementById('clienteRua').value = `GPS Coordenadas: (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+
+        try {
+          const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+          const data = await resp.json();
+          if (data && data.address) {
+            const addr = data.address;
+            document.getElementById('clienteRua').value = `${addr.road || addr.suburb || 'Localização GPS'} ${addr.house_number || ''}`;
+            document.getElementById('clienteBairro').value = addr.suburb || addr.neighbourhood || addr.city_district || '';
+            document.getElementById('clienteCidade').value = addr.city || addr.town || addr.municipality || '';
+            document.getElementById('clienteEstado').value = addr.state || '';
+          }
+        } catch (e) {
+          console.log('Busca automática indisponível.');
+        }
+
+        mostrarToast('✅ Localização obtida com sucesso!');
+      }, (error) => {
+        alert('Erro ao obter GPS. Permita o acesso à localização.');
+      }, { enableHighAccuracy: true });
+    }
+
+    async function enviarPedidoWhatsApp() {
+      const nome = document.getElementById('clienteNome').value.trim();
+      const cidade = document.getElementById('clienteCidade').value.trim();
+      const rua = document.getElementById('clienteRua').value.trim();
+      const bairro = document.getElementById('clienteBairro').value.trim();
+      const estado = document.getElementById('clienteEstado').value.trim();
+      const formaPagamento = document.getElementById('formaPagamento').value;
+      const troco = document.getElementById('clienteTroco').value.trim();
+      const obs = document.getElementById('clienteObs').value.trim();
+      const gpsLink = document.getElementById('gpsLinkMaps').value.trim();
+
+      if (!nome || !cidade || !rua || !bairro || !estado) {
+        alert('Por favor, preencha todos os campos obrigatórios!');
+        return;
+      }
+
+      if (!whatsappVendedor) {
+        alert('WhatsApp da loja não configurado.');
+        return;
+      }
+
+      let itensArray = [];
+      let valorTotalGeral = 0;
+      let mensagem = `🛒 *NOVO PEDIDO - CATÁLOGO*\n\n`;
+      mensagem += `👤 *Nome:* ${nome}\n`;
+      mensagem += `🏙️ *Cidade:* ${cidade} - ${estado}\n`;
+      mensagem += `🏠 *Rua:* ${rua}\n`;
+      mensagem += `🏘️ *Bairro:* ${bairro}\n`;
+      if (gpsLink) mensagem += `📍 *GPS / Mapa:* ${gpsLink}\n`;
+      mensagem += `💳 *Forma de Pagamento:* ${formaPagamento}\n`;
+      if (formaPagamento === 'Dinheiro' && troco) {
+        mensagem += `💵 *Troco para:* ${troco}\n`;
+      }
+      if (obs) mensagem += `💬 *Observação:* ${obs}\n\n`;
+      mensagem += `📋 *Itens do Pedido:*\n`;
+
+      for (let id in carrinho) {
+        let item = carrinho[id];
+        let subtotal = item.preco * item.qtd;
+        valorTotalGeral += subtotal;
+        itensArray.push({ nome: item.nome, preco: item.preco, qtd: item.qtd });
+        mensagem += `• ${item.qtd}x ${item.nome} (R$ ${subtotal.toFixed(2)})\n`;
+      }
+
+      mensagem += `\n💰 *Total Geral:* R$ ${valorTotalGeral.toFixed(2)}`;
+
+      if (lojaId) {
+        try {
+          await db.collection('lojas').doc(lojaId).collection('pedidos').add({
+            clienteNome: nome, cidade, rua, bairro, estado, formaPagamento, troco,
+            observacao: obs, gps: gpsLink, itens: itensArray, valorTotal: valorTotalGeral, criadoEm: new Date()
+          });
+        } catch (e) {
+          console.error('Erro ao salvar pedido:', e);
+        }
+      }
+
+      const urlWpp = `https://wa.me/55${whatsappVendedor}?text=${encodeURIComponent(mensagem)}`;
+      window.open(urlWpp, '_blank');
+      fecharModalCadastro();
+    }
   </script>
 </body>
 </html>
